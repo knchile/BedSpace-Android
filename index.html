@@ -106,9 +106,10 @@
           <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
           Ask BedSpace AI
         </button>
-        <button onclick="switchTab('download')" class="bg-navy-800 hover:bg-navy-900 text-white px-4 py-2 rounded-lg text-xs font-bold transition">
-          Get Android App
-        </button>
+        <a href="/bedspace-zm.apk" download="BedSpaceZM.apk" class="bg-navy-800 hover:bg-navy-900 text-white px-4 py-2 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          Download APK
+        </a>
       </div>
     </div>
   </header>
@@ -378,12 +379,13 @@
         </div>
 
         <div class="flex flex-col sm:flex-row justify-center gap-3">
-          <button onclick="switchTab('explore')" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-3 rounded-xl font-bold text-xs transition">
-            Explore Web Version Now
-          </button>
-          <a href="https://github.com" target="_blank" class="bg-navy-900 hover:bg-navy-800 text-white px-6 py-3 rounded-xl font-bold text-xs transition inline-flex items-center justify-center gap-2">
-            <span>View on GitHub</span>
+          <a href="/bedspace-zm.apk" download="BedSpaceZM.apk" class="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition inline-flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span>Download BedSpaceZM APK (23.5 MB)</span>
           </a>
+          <button onclick="switchTab('explore')" class="bg-slate-100 hover:bg-slate-200 text-navy-900 px-6 py-3.5 rounded-xl font-bold text-sm transition">
+            Explore Web Version
+          </button>
         </div>
       </div>
     </section>
