@@ -605,14 +605,13 @@
       </div>
 
       <!-- Live Lipila Key Toggle / Config -->
-      <details class="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-        <summary class="font-bold cursor-pointer text-slate-700">⚙️ Lipila API Key Settings</summary>
-        <div class="mt-2 space-y-1">
-          <label class="block text-[10px] font-bold text-slate-500">Active Lipila API Key:</label>
-          <input id="lipilaCustomApiKey" type="text" oninput="updateLipilaBadge()" value="lsk_019f41c4-269e-7529-ab2d-c3a3b099e76f" placeholder="Paste your lpk_ live key or lsk_ sandbox key" class="w-full text-[10px] font-mono p-1.5 border border-slate-200 rounded bg-white" />
-          <p class="text-[10px] text-slate-500">
-            • <b>lsk_...</b> = Sandbox Key (Simulated carrier push, logs in Sandbox Dashboard).<br/>
-            • <b>lpk_...</b> = Live Production Key (Sends real telecom USSD PIN prompt to Airtel/MTN/Zamtel).
+      <details class="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200" open>
+        <summary class="font-bold cursor-pointer text-slate-700">⚙️ Lipila Production API Key Configuration</summary>
+        <div class="mt-2 space-y-1.5">
+          <label class="block text-[10px] font-bold text-slate-500">Live Lipila API Key (Header: x-api-key):</label>
+          <input id="lipilaCustomApiKey" type="text" oninput="updateLipilaBadge()" value="lsk_019f41c4-269e-7529-ab2d-c3a3b099e76f" placeholder="Enter your Lipila API Key" class="w-full text-[11px] font-mono p-2 border border-slate-200 rounded-lg bg-white shadow-sm outline-none focus:border-emerald-600" />
+          <p class="text-[10px] text-emerald-800 font-semibold">
+            ✓ Dispatches collection payload to <code>https://blz.lipila.io/api/v1/collections/mobile-money</code>.
           </p>
         </div>
       </details>
@@ -1209,13 +1208,8 @@
       localStorage.setItem('lipila_api_key', currentKey);
 
       if (badge) {
-        if (currentKey.startsWith('lpk_')) {
-          badge.className = 'bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1';
-          badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Live Production (lpk_)';
-        } else {
-          badge.className = 'bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1';
-          badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Sandbox Mode (lsk_)';
-        }
+        badge.className = 'bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Live Production Gateway';
       }
     }
 
