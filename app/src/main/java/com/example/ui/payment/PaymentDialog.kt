@@ -105,7 +105,7 @@ fun PaymentDialog(
     val coroutineScope = rememberCoroutineScope()
     val currentUser = AuthRepository.currentUser.value
 
-    var paymentType by remember { mutableStateOf(PaymentType.RESERVATION_FEE) }
+    var paymentType by remember { mutableStateOf(PaymentType.FIRST_MONTH_RENT) }
     var selectedProvider by remember { mutableStateOf(PaymentProvider.AIRTEL_MONEY) }
     var phoneOrAccount by remember { mutableStateOf(currentUser?.phone ?: "097") }
     var isProcessing by remember { mutableStateOf(false) }
@@ -113,7 +113,7 @@ fun PaymentDialog(
     var completedTransaction by remember { mutableStateOf<PaymentTransaction?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val amountToPay = if (paymentType == PaymentType.RESERVATION_FEE) 200 else property.priceMonthlyKwacha
+    val amountToPay = if (paymentType == PaymentType.RESERVATION_FEE) (property.priceMonthlyKwacha * 0.1).toInt().coerceAtLeast(100) else property.priceMonthlyKwacha
 
     Dialog(
         onDismissRequest = { if (!isProcessing) onDismiss() },
@@ -359,21 +359,6 @@ fun PaymentDialog(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = if (paymentType == PaymentType.RESERVATION_FEE) Blue50 else Slate50,
-                            border = BorderStroke(1.dp, if (paymentType == PaymentType.RESERVATION_FEE) Blue600 else Slate200),
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable { paymentType = PaymentType.RESERVATION_FEE }
-                        ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                Text("Reservation Deposit", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Navy900)
-                                Text("ZMW K200", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = Blue600)
-                                Text("Holds the room", fontSize = 10.sp, color = Slate500)
-                            }
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
                             color = if (paymentType == PaymentType.FIRST_MONTH_RENT) Blue50 else Slate50,
                             border = BorderStroke(1.dp, if (paymentType == PaymentType.FIRST_MONTH_RENT) Blue600 else Slate200),
                             modifier = Modifier
@@ -383,7 +368,23 @@ fun PaymentDialog(
                             Column(modifier = Modifier.padding(10.dp)) {
                                 Text("Full 1st Month", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Navy900)
                                 Text("ZMW K${property.priceMonthlyKwacha}", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = Green700)
-                                Text("Secures tenancy", fontSize = 10.sp, color = Slate500)
+                                Text("Full listing rent", fontSize = 10.sp, color = Slate500)
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (paymentType == PaymentType.RESERVATION_FEE) Blue50 else Slate50,
+                            border = BorderStroke(1.dp, if (paymentType == PaymentType.RESERVATION_FEE) Blue600 else Slate200),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { paymentType = PaymentType.RESERVATION_FEE }
+                        ) {
+                            val deposit = (property.priceMonthlyKwacha * 0.1).toInt().coerceAtLeast(100)
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text("Reservation Deposit", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Navy900)
+                                Text("ZMW K$deposit", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = Blue600)
+                                Text("10% deposit", fontSize = 10.sp, color = Slate500)
                             }
                         }
                     }

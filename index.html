@@ -565,14 +565,27 @@
         <button onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
       </div>
 
-      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5 text-xs">
         <div class="flex justify-between"><span class="text-slate-500">Accommodation:</span><b id="payPropertyTitle" class="text-navy-900">Campus View Lodge</b></div>
-        <div class="flex justify-between"><span class="text-slate-500">Payment Purpose:</span><b class="text-emerald-700 font-bold">Room Rent / Booking Deposit</b></div>
+        <div class="flex justify-between"><span class="text-slate-500">Monthly Rent:</span><b id="payListingPriceDisplay" class="text-emerald-700 font-extrabold text-sm">ZMW K1,800.00</b></div>
+        
         <div class="pt-2 border-t border-slate-200">
-          <label class="block text-[11px] font-bold text-slate-700 mb-1">Amount to Pay (ZMW):</label>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Choose Payment Option:</label>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <button type="button" id="payOptionFull" onclick="setPaymentAmountOption('FULL')" class="p-2 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-900 font-bold text-left text-xs transition">
+              <span class="block text-[10px] text-emerald-700 font-medium">Full 1st Month</span>
+              <span id="payOptionFullLabel" class="font-extrabold text-xs">K1,800.00</span>
+            </button>
+            <button type="button" id="payOptionDeposit" onclick="setPaymentAmountOption('DEPOSIT')" class="p-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-left text-xs transition">
+              <span class="block text-[10px] text-slate-500 font-medium">10% Holding Deposit</span>
+              <span id="payOptionDepositLabel" class="font-extrabold text-xs">K180.00</span>
+            </button>
+          </div>
+
+          <label class="block text-[10px] font-bold text-slate-500 mb-1">Amount to Pay (ZMW):</label>
           <div class="relative">
             <span class="absolute left-3 top-2.5 font-bold text-slate-500 text-xs">K</span>
-            <input id="payAmountInput" type="number" min="1" step="10" value="2000" class="w-full border border-slate-200 rounded-xl py-2 pl-8 pr-3 text-sm font-extrabold text-navy-900 bg-white outline-none focus:border-emerald-600 shadow-sm" />
+            <input id="payAmountInput" type="number" min="1" step="10" value="1800" class="w-full border border-slate-200 rounded-xl py-2 pl-8 pr-3 text-sm font-extrabold text-navy-900 bg-white outline-none focus:border-emerald-600 shadow-sm" />
           </div>
         </div>
       </div>
@@ -1221,14 +1234,37 @@
       return digits;
     }
 
+    function setPaymentAmountOption(option) {
+      if (!currentPayingProp) return;
+      const rent = currentPayingProp.priceMonthlyKwacha || 1800;
+      const deposit = Math.round(rent * 0.1);
+      const input = document.getElementById('payAmountInput');
+      const btnFull = document.getElementById('payOptionFull');
+      const btnDep = document.getElementById('payOptionDeposit');
+
+      if (option === 'FULL') {
+        input.value = rent;
+        btnFull.className = 'p-2 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-900 font-bold text-left text-xs transition shadow-sm';
+        btnDep.className = 'p-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-left text-xs transition';
+      } else {
+        input.value = deposit;
+        btnDep.className = 'p-2 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-900 font-bold text-left text-xs transition shadow-sm';
+        btnFull.className = 'p-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-left text-xs transition';
+      }
+    }
+
     function openPaymentModal(propId) {
       currentPayingProp = propertiesData.find(p => p.id === propId) || propertiesData[0];
       document.getElementById('payPropertyTitle').innerText = currentPayingProp.title;
       
-      const amountInput = document.getElementById('payAmountInput');
-      if (amountInput) {
-        amountInput.value = currentPayingProp.price || 2000;
-      }
+      const rent = currentPayingProp.priceMonthlyKwacha || 1800;
+      const deposit = Math.round(rent * 0.1);
+
+      document.getElementById('payListingPriceDisplay').innerText = `ZMW K${Number(rent).toLocaleString()}.00 / month`;
+      document.getElementById('payOptionFullLabel').innerText = `K${Number(rent).toLocaleString()}.00`;
+      document.getElementById('payOptionDepositLabel').innerText = `K${Number(deposit).toLocaleString()}.00`;
+
+      setPaymentAmountOption('FULL');
 
       const keyInput = document.getElementById('lipilaCustomApiKey');
       if (keyInput) {
@@ -1258,7 +1294,7 @@
 
     async function executePayment() {
       const rawInput = document.getElementById('payAccountNumber').value.trim();
-      const amountVal = parseFloat(document.getElementById('payAmountInput').value) || 2000;
+      const amountVal = parseFloat(document.getElementById('payAmountInput').value) || (currentPayingProp ? currentPayingProp.priceMonthlyKwacha : 1800);
       const apiKeyInput = document.getElementById('lipilaCustomApiKey') ? document.getElementById('lipilaCustomApiKey').value.trim() : LIPILA_API_KEY;
       const sim = document.getElementById('paymentPromptSim');
       const statusBox = document.getElementById('paymentPromptStatusBox');
@@ -1278,8 +1314,8 @@
       }
 
       const activeApiKey = apiKeyInput || activeLipilaKey || DEFAULT_LIPILA_KEY;
-      const isSandboxKey = activeApiKey.startsWith('lsk_');
 
+      sim.classList.remove('hidden');
       sim.className = 'p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-2';
       statusBox.innerHTML = `
         <div class="flex items-center gap-2 text-amber-800 font-bold">
@@ -1295,7 +1331,7 @@
       const studentEmail = currentUser ? currentUser.email : 'knchile@gmail.com';
       const nameParts = studentName.trim().split(' ');
 
-      const endpoint = isCard ? LIPILA_CARD_ENDPOINT : LIPILA_PROD_ENDPOINT;
+      const targetEndpoint = isCard ? LIPILA_CARD_ENDPOINT : LIPILA_PROD_ENDPOINT;
       const payload = {
         amount: amountVal,
         currency: 'ZMW',
@@ -1305,11 +1341,18 @@
         referenceId: refId,
         firstName: nameParts[0] || 'Student',
         lastName: nameParts.slice(1).join(' ') || 'Applicant',
-        email: studentEmail
+        email: studentEmail,
+        isCard: isCard
       };
 
+      // Resilient Multi-Tier API dispatch (Vercel serverless proxy -> Direct -> CORS Gateway fallback)
+      let response = null;
+      let resData = null;
+      let fetchError = null;
+
+      // Tier 1: Try same-origin serverless proxy (/api/lipila)
       try {
-        const response = await fetch(endpoint, {
+        const proxyResp = await fetch('/api/lipila', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1318,72 +1361,113 @@
           },
           body: JSON.stringify(payload)
         });
-
-        const resData = await response.json().catch(() => null);
-
-        btn.disabled = false;
-        btn.innerText = 'Send Payment Request to Lipila';
-
-        if (response.ok && resData) {
-          const identifier = resData.identifier || refId;
-          const status = resData.status || 'Pending';
-          const paymentType = resData.paymentType || selectedProvider;
-
-          sim.className = 'p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-2.5 text-slate-800';
-          statusBox.innerHTML = `
-            <div class="flex items-center justify-between">
-              <span class="font-extrabold text-blue-900 flex items-center gap-1.5 text-sm">
-                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping"></span>
-                Lipila Payment Request Active (${status})
-              </span>
-              <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">${paymentType}</span>
-            </div>
-            
-            <div class="bg-white p-3 rounded-xl border border-blue-100 space-y-1.5 font-mono text-[11px]">
-              <div class="flex justify-between"><b>Amount Requested:</b> <span class="font-bold text-navy-900 text-xs">ZMW K${amountVal.toFixed(2)}</span></div>
-              <div class="flex justify-between"><b>Recipient Phone:</b> <span>${formattedPhone}</span></div>
-              <div class="flex justify-between"><b>Lipila Identifier:</b> <span class="text-blue-700 font-bold">${identifier}</span></div>
-              <div class="flex justify-between"><b>Reference ID:</b> <span>${refId}</span></div>
-              <div class="flex justify-between"><b>Status:</b> <span class="text-amber-600 font-bold">${status} (Awaiting Handset PIN)</span></div>
-            </div>
-
-            <div class="bg-emerald-50 border border-emerald-300 p-3 rounded-xl text-[11px] text-emerald-900 space-y-1">
-              <p class="font-bold text-emerald-800 flex items-center gap-1.5">
-                <span>📱</span> Please check your phone handset now!
-              </p>
-              <p class="text-emerald-700">Enter your <b>${paymentType}</b> PIN on the phone screen pop-up to authorize <b>ZMW K${amountVal.toFixed(2)}</b>.</p>
-            </div>
-          `;
-        } else {
-          // Parse Lipila error message
-          let errDetail = 'Payment collection failed.';
-          if (resData) {
-            if (resData.errors && resData.errors.generalErrors && resData.errors.generalErrors.length > 0) {
-              errDetail = resData.errors.generalErrors.join(', ');
-            } else if (resData.message) {
-              errDetail = resData.message;
-            }
-          }
-
-          sim.className = 'p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-900 space-y-1';
-          statusBox.innerHTML = `
-            <div class="font-bold text-red-700 flex items-center gap-1">
-              <span>❌</span> Lipila API Returned Error (HTTP ${response.status})
-            </div>
-            <p class="text-[11px] text-red-800">${errDetail}</p>
-            <p class="text-[10px] text-red-600 font-mono">Ref: ${refId}</p>
-          `;
+        if (proxyResp.status !== 404 && proxyResp.status !== 405) {
+          response = proxyResp;
+          resData = await proxyResp.json().catch(() => null);
         }
-      } catch (err) {
-        console.error('Lipila Request Error:', err);
-        btn.disabled = false;
-        btn.innerText = 'Send Payment Request to Lipila';
+      } catch (e) {
+        console.warn('Local proxy attempt skipped:', e);
+      }
+
+      // Tier 2: Direct call to Lipila Gateway if proxy wasn't used or returned 404 (e.g. static preview)
+      if (!response) {
+        try {
+          const directResp = await fetch(targetEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'x-api-key': activeApiKey
+            },
+            body: JSON.stringify(payload)
+          });
+          response = directResp;
+          resData = await directResp.json().catch(() => null);
+        } catch (e) {
+          console.warn('Direct fetch failed (likely browser CORS), switching to secure gateway proxy:', e);
+          fetchError = e;
+        }
+      }
+
+      // Tier 3: Secure CORS Gateway proxy if direct fetch was blocked by browser CORS
+      if (!response) {
+        try {
+          const corsProxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetEndpoint);
+          const proxyResp = await fetch(corsProxyUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'x-api-key': activeApiKey
+            },
+            body: JSON.stringify(payload)
+          });
+          response = proxyResp;
+          resData = await proxyResp.json().catch(() => null);
+        } catch (e2) {
+          fetchError = e2;
+        }
+      }
+
+      btn.disabled = false;
+      btn.innerText = 'Send Payment Request to Lipila';
+
+      if (response && response.ok && resData) {
+        const identifier = resData.identifier || refId;
+        const status = resData.status || 'Pending';
+        const paymentType = resData.paymentType || selectedProvider;
+
+        sim.className = 'p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-2.5 text-slate-800';
+        statusBox.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-blue-900 flex items-center gap-1.5 text-sm">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping"></span>
+              Lipila Payment Request Active (${status})
+            </span>
+            <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">${paymentType}</span>
+          </div>
+          
+          <div class="bg-white p-3 rounded-xl border border-blue-100 space-y-1.5 font-mono text-[11px]">
+            <div class="flex justify-between"><b>Amount Requested:</b> <span class="font-bold text-navy-900 text-xs">ZMW K${amountVal.toFixed(2)}</span></div>
+            <div class="flex justify-between"><b>Recipient Phone:</b> <span>${formattedPhone}</span></div>
+            <div class="flex justify-between"><b>Lipila Identifier:</b> <span class="text-blue-700 font-bold">${identifier}</span></div>
+            <div class="flex justify-between"><b>Reference ID:</b> <span>${refId}</span></div>
+            <div class="flex justify-between"><b>Status:</b> <span class="text-amber-600 font-bold">${status} (Awaiting Handset PIN)</span></div>
+          </div>
+
+          <div class="bg-emerald-50 border border-emerald-300 p-3 rounded-xl text-[11px] text-emerald-900 space-y-1">
+            <p class="font-bold text-emerald-800 flex items-center gap-1.5">
+              <span>📱</span> Please check your phone handset now!
+            </p>
+            <p class="text-emerald-700">Enter your <b>${paymentType}</b> PIN on the phone screen pop-up to authorize <b>ZMW K${amountVal.toFixed(2)}</b>.</p>
+          </div>
+        `;
+      } else if (response) {
+        // Parse Lipila error message
+        let errDetail = 'Payment collection failed.';
+        if (resData) {
+          if (resData.errors && resData.errors.generalErrors && resData.errors.generalErrors.length > 0) {
+            errDetail = resData.errors.generalErrors.join(', ');
+          } else if (resData.message) {
+            errDetail = resData.message;
+          }
+        }
+
+        sim.className = 'p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-900 space-y-1';
+        statusBox.innerHTML = `
+          <div class="font-bold text-red-700 flex items-center gap-1">
+            <span>❌</span> Lipila API Returned Error (HTTP ${response.status})
+          </div>
+          <p class="text-[11px] text-red-800">${errDetail}</p>
+          <p class="text-[10px] text-red-600 font-mono">Ref: ${refId}</p>
+        `;
+      } else {
         sim.className = 'p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-900 space-y-1';
         statusBox.innerHTML = `
           <div class="font-bold text-red-700 flex items-center gap-1">
             <span>❌</span> Gateway Connection Failed
           </div>
-          <p class="text-[11px] text-red-800">${err.message}</p>
+          <p class="text-[11px] text-red-800">${fetchError ? fetchError.message : 'Network error connecting to Lipila'}</p>
         `;
       }
     }
@@ -1394,6 +1478,9 @@
       if (!prop) return;
       const modal = document.getElementById('bookingModal');
       const content = document.getElementById('modalContent');
+      const rent = prop.priceMonthlyKwacha;
+      const deposit = Math.round(rent * 0.1);
+
       content.innerHTML = `
         <div class="space-y-4">
           <div class="flex items-center gap-2">
@@ -1427,7 +1514,7 @@
               Send Inquiry
             </button>
             <button onclick="closeBookingModal(); openPaymentModal('${prop.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">
-              Pay K200 Deposit
+              Pay Rent (K${rent}) / Deposit (K${deposit})
             </button>
           </div>
         </div>

@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/lipila",
+      "destination": "/api/lipila.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
