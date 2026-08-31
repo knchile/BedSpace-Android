@@ -37,14 +37,28 @@ object LipilaPaymentClient {
             .build()
     }
 
-    private fun getApiKey(): String {
-        return try {
-            val key = BuildConfig.LIPILA_API_KEY
-            if (key.isNullOrBlank() || key == "MY_LIPILA_API_KEY") DEFAULT_API_KEY else key
-        } catch (e: Throwable) {
-            DEFAULT_API_KEY
-        }
+    private var customApiKey: String? = null
+
+    fun setCustomApiKey(key: String?) {
+        customApiKey = key?.trim()
     }
+
+    fun getActiveApiKey(): String {
+        return customApiKey?.takeIf { it.isNotBlank() }
+            ?: System.getenv("LIPILA_API_KEY")?.takeIf { it.isNotBlank() && it != "MY_LIPILA_API_KEY" }
+            ?: try {
+                val key = BuildConfig.LIPILA_API_KEY
+                if (key.isNullOrBlank() || key == "MY_LIPILA_API_KEY") DEFAULT_API_KEY else key
+            } catch (e: Throwable) {
+                DEFAULT_API_KEY
+            }
+    }
+
+    fun isProductionKey(): Boolean {
+        return getActiveApiKey().startsWith("lpk_")
+    }
+
+    private fun getApiKey(): String = getActiveApiKey()
 
     /**
      * Formats raw user input into standard Zambian MSISDN: 2609XXXXXXXX / 2607XXXXXXXX
