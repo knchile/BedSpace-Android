@@ -47,6 +47,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -90,10 +91,20 @@ import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate700
 import com.example.ui.theme.White
 
+import com.example.data.auth.AuthRepository
+import com.example.data.payment.PaymentRepository
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Person
+
 @Composable
 fun AdminDashboard(
     modifier: Modifier = Modifier
 ) {
+    val currentUser by AuthRepository.currentUser.collectAsState()
+    val allUsers by AuthRepository.registeredUsers.collectAsState()
+    val allTransactions by PaymentRepository.transactions.collectAsState()
+
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var verificationQueue by remember { mutableStateOf(SampleData.sampleAdminVerificationQueue) }
     var listingApprovals by remember { mutableStateOf(SampleData.sampleAdminListingApprovals) }
@@ -101,13 +112,14 @@ fun AdminDashboard(
 
     val pendingVerifCount = verificationQueue.count { it.status == VerificationStatus.UNDER_REVIEW }
     val pendingListingCount = listingApprovals.count { it.status == ListingStatus.PENDING_APPROVAL }
+    val totalVolumeKwacha = allTransactions.sumOf { it.amountKwacha }
 
     val tabs = listOf(
         "Overview",
         "Verification Queue ($pendingVerifCount)",
         "Listing Approvals ($pendingListingCount)",
-        "Institutions",
-        "Audit Log"
+        "User Accounts (${allUsers.size})",
+        "Payments & Escrow (K$totalVolumeKwacha)"
     )
 
     LazyColumn(
@@ -153,9 +165,9 @@ fun AdminDashboard(
                                     )
                                 )
                                 Text(
-                                    text = "Platform Moderation & Trust Engine",
+                                    text = "Logged in: ${currentUser?.email ?: "knchile@gmail.com"} (${currentUser?.name ?: "Admin"})",
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = Slate300
+                                        color = Green100
                                     )
                                 )
                             }
@@ -167,7 +179,7 @@ fun AdminDashboard(
                             border = BorderStroke(1.dp, Green600.copy(alpha = 0.5f))
                         ) {
                             Text(
-                                text = "ADMIN ROLE",
+                                text = "SUPER ADMIN",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = Green100,
                                     fontWeight = FontWeight.Bold,
@@ -366,16 +378,186 @@ fun AdminDashboard(
             }
 
             3 -> {
-                // INSTITUTIONS DIRECTORY
+                // USER REGISTRY TAB
                 item {
-                    AdminInstitutionsSection(modifier = Modifier.padding(16.dp))
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Platform User Registry & Isolation",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Navy900
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "All accounts registered on BedSpaceZM. Each role is securely scoped to their own data.",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Slate500)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+
+                items(allUsers, key = { it.id }) { user ->
+                    Card(
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = White),
+                        border = BorderStroke(1.dp, Slate200),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text(
+                                        text = user.name,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Navy900,
+                                        fontSize = 14.sp
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = if (user.role.name == "ADMIN") Slate100 else if (user.role.name == "LANDLORD") Green50 else Blue50
+                                    ) {
+                                        Text(
+                                            text = user.role.label,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 9.sp,
+                                            color = if (user.role.name == "LANDLORD") Green700 else Blue600,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "${user.email} • ${user.phone}",
+                                    fontSize = 11.sp,
+                                    color = Slate500
+                                )
+                                if (user.institution != null) {
+                                    Text(
+                                        text = "Campus: ${user.institution}",
+                                        fontSize = 11.sp,
+                                        color = Slate700
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             4 -> {
-                // AUDIT LOG
+                // PAYMENTS & ESCROW LEDGER TAB
                 item {
-                    AdminAuditLogSection(modifier = Modifier.padding(16.dp))
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Green50,
+                            border = BorderStroke(1.dp, Green100),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = "Mobile Money Escrow Balance",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Green700
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Total Gross Transaction Volume: ZMW K$totalVolumeKwacha",
+                                    style = MaterialTheme.typography.headlineSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Navy900
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Instant settlements via Airtel Money, MTN MoMo, Zamtel Kwacha, and Visa/Mastercard.",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Slate700)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = "Live Payment Gateway Transactions",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Navy900
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+
+                if (allTransactions.isEmpty()) {
+                    item {
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("No Transactions Logged", fontWeight = FontWeight.Bold, color = Navy900)
+                                Text("Payments made by students on mobile money will show here.", color = Slate500, fontSize = 12.sp)
+                            }
+                        }
+                    }
+                } else {
+                    items(allTransactions, key = { it.id }) { tx ->
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 6.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "${tx.studentName} ➔ ${tx.landlordName}",
+                                        fontWeight = FontWeight.Bold,
+                                        color = Navy900,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        text = "ZMW K${tx.amountKwacha}",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Green700,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Property: ${tx.propertyTitle} (${tx.paymentType.label})",
+                                    fontSize = 11.sp,
+                                    color = Slate700
+                                )
+                                Text(
+                                    text = "Gateway: ${tx.provider.label} • Ref: ${tx.referenceCode} • ${tx.dateFormatted}",
+                                    fontSize = 10.sp,
+                                    color = Slate500
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

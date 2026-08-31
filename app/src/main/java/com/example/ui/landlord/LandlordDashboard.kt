@@ -106,22 +106,37 @@ import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate800
 import com.example.ui.theme.White
 
+import com.example.data.auth.AuthRepository
+import com.example.data.payment.PaymentRepository
+
 @Composable
 fun LandlordDashboard(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val currentUser by AuthRepository.currentUser.collectAsState()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var verificationStatus by remember { mutableStateOf(VerificationStatus.VERIFIED) }
     var showAddPropertyDialog by remember { mutableStateOf(false) }
 
-    // Neon StateFlow subscriptions
+    // Neon & Payment StateFlow subscriptions
     val allProperties by NeonRepository.properties.collectAsState()
     val incomingRequests by NeonRepository.incomingRequests.collectAsState()
     val landlordDocs by NeonRepository.landlordDocuments.collectAsState()
     val galleryPhotos by NeonRepository.propertyGallery.collectAsState()
+    val allTransactions by PaymentRepository.transactions.collectAsState()
 
-    val myProperties = allProperties.take(3)
+    val landlordName = currentUser?.name ?: "Mr. Mwansa Tembo"
+    val myProperties = remember(allProperties, landlordName) {
+        allProperties.filter { it.landlordName.contains(landlordName, ignoreCase = true) || it.landlordName.contains("Tembo", ignoreCase = true) }
+            .ifEmpty { allProperties.take(3) }
+    }
+
+    val landlordPayouts = remember(allTransactions, landlordName) {
+        allTransactions.filter { it.landlordName.contains(landlordName, ignoreCase = true) || it.landlordName.contains("Tembo", ignoreCase = true) }
+    }
+    val totalRevenueKwacha = landlordPayouts.sumOf { it.amountKwacha }
+
     val activeCount = myProperties.count { it.status == ListingStatus.ACTIVE }
     val newRequestsCount = incomingRequests.count { it.status == BookingStatus.PENDING }
     val confirmedCount = incomingRequests.count { it.status == BookingStatus.CONFIRMED }
@@ -130,7 +145,7 @@ fun LandlordDashboard(
         "My Properties (${myProperties.size})",
         "Booking Requests (${incomingRequests.size})",
         "Verification & KYC (${landlordDocs.size}/3)",
-        "Gallery Photos (${galleryPhotos.size})"
+        "Payouts (K$totalRevenueKwacha)"
     )
 
     LazyColumn(
@@ -443,7 +458,7 @@ fun LandlordDashboard(
             }
 
             3 -> {
-                // GALLERY PHOTOS TAB
+                // PAYOUTS & MOBILE MONEY REVENUE TAB
                 item {
                     Column(
                         modifier = Modifier
@@ -451,18 +466,98 @@ fun LandlordDashboard(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        PropertyGalleryManager(
-                            galleryItems = galleryPhotos,
-                            onAddImage = { uri, label ->
-                                NeonRepository.addPropertyGalleryItem(uri, label)
-                            },
-                            onRemoveImage = { id ->
-                                NeonRepository.removePropertyGalleryItem(id)
-                            },
-                            onSetCover = { id ->
-                                NeonRepository.setCoverPhoto(id)
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Green50,
+                            border = BorderStroke(1.dp, Green100),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = "Mobile Money Direct Payouts",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Green700
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Automated settlements to your registered Airtel Money / MTN MoMo wallet (+260 96 688 2244).",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Slate700)
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = "Total Collected: ZMW K$totalRevenueKwacha",
+                                    style = MaterialTheme.typography.headlineSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Navy900
+                                    )
+                                )
                             }
+                        }
+
+                        Text(
+                            text = "Student Payment Ledger",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Navy900
+                            )
                         )
+
+                        if (landlordPayouts.isEmpty()) {
+                            Card(
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = White),
+                                border = BorderStroke(1.dp, Slate200),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("No Payouts Yet", fontWeight = FontWeight.Bold, color = Navy900)
+                                    Text("Student reservation deposits (K200) and monthly rent payments will show here.", color = Slate500, fontSize = 12.sp)
+                                }
+                            }
+                        } else {
+                            landlordPayouts.forEach { tx ->
+                                Card(
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = White),
+                                    border = BorderStroke(1.dp, Slate200),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(14.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "Received from ${tx.studentName}",
+                                                fontWeight = FontWeight.Bold,
+                                                color = Navy900,
+                                                fontSize = 14.sp
+                                            )
+                                            Text(
+                                                text = "+ K${tx.amountKwacha}",
+                                                fontWeight = FontWeight.ExtraBold,
+                                                color = Green700,
+                                                fontSize = 15.sp
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = "For ${tx.propertyTitle} • ${tx.paymentType.label}",
+                                            fontSize = 12.sp,
+                                            color = Slate700
+                                        )
+                                        Text(
+                                            text = "Ref: ${tx.referenceCode} • ${tx.provider.label} • ${tx.dateFormatted}",
+                                            fontSize = 10.sp,
+                                            color = Slate500
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

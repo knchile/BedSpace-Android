@@ -111,9 +111,74 @@ data class ListingApprovalRecord(
     val rejectionReason: String? = null
 )
 
+enum class UserRole(val label: String) {
+    STUDENT("Student"),
+    LANDLORD("Landlord"),
+    ADMIN("Administrator")
+}
+
+data class User(
+    val id: String,
+    val name: String,
+    val email: String,
+    val password: String,
+    val phone: String,
+    val role: UserRole,
+    val institution: String? = null,
+    val studentId: String? = null,
+    val nrcNumber: String? = null,
+    val isVerified: Boolean = false
+)
+
+enum class PaymentType(val label: String) {
+    RESERVATION_FEE("Reservation Deposit (K200)"),
+    FIRST_MONTH_RENT("First Month Rent")
+}
+
+enum class PaymentProvider(val label: String, val ussdPrefix: String, val brandColorHex: Long) {
+    AIRTEL_MONEY("Airtel Money Zambia", "*778#", 0xFFE11D48),
+    MTN_MOMO("MTN Mobile Money", "*115#", 0xFFEAB308),
+    ZAMTEL_KWACHA("Zamtel Kwacha", "*344#", 0xFF16A34A),
+    VISA_MASTERCARD("Debit / Credit Card (Visa/Mastercard)", "Online", 0xFF2563EB)
+}
+
+enum class PaymentStatus(val label: String) {
+    PENDING("Processing"),
+    COMPLETED("Payment Successful"),
+    FAILED("Payment Failed"),
+    REFUNDED("Refunded")
+}
+
+data class PaymentTransaction(
+    val id: String,
+    val bookingId: String,
+    val propertyId: String,
+    val propertyTitle: String,
+    val studentId: String,
+    val studentName: String,
+    val studentPhone: String,
+    val landlordName: String,
+    val amountKwacha: Int,
+    val paymentType: PaymentType,
+    val provider: PaymentProvider,
+    val providerAccountNumber: String,
+    val referenceCode: String,
+    val timestamp: Long,
+    val dateFormatted: String,
+    val status: PaymentStatus = PaymentStatus.COMPLETED
+)
+
+data class FAQItem(
+    val question: String,
+    val answer: String,
+    val category: String
+)
+
 enum class AppDestination(val route: String, val title: String) {
     LANDING("/", "Find Rooms"),
     STUDENT("/student/dashboard", "Student Portal"),
     LANDLORD("/landlord/dashboard", "Landlord Portal"),
-    ADMIN("/admin", "Admin Console")
+    ADMIN("/admin", "Admin Console"),
+    PRIVACY_POLICY("/privacy", "Privacy Policy"),
+    FAQS("/faqs", "Help & FAQs")
 }

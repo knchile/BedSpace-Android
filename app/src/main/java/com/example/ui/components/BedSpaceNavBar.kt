@@ -67,6 +67,14 @@ import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate800
 import com.example.ui.theme.White
 
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Policy
+import com.example.data.auth.AuthRepository
+import com.example.model.UserRole
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BedSpaceTopBar(
@@ -74,10 +82,13 @@ fun BedSpaceTopBar(
     onNavigate: (AppDestination) -> Unit,
     onOpenChatBot: () -> Unit = {},
     onOpenNotifications: () -> Unit = {},
+    onOpenAuth: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showPortalMenu by remember { mutableStateOf(false) }
+    var showUserMenu by remember { mutableStateOf(false) }
     val notifications by NeonRepository.notifications.collectAsState()
+    val currentUser by AuthRepository.currentUser.collectAsState()
     val unreadCount = notifications.count { !it.isRead }
 
     Surface(
@@ -90,7 +101,7 @@ fun BedSpaceTopBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -100,7 +111,7 @@ fun BedSpaceTopBar(
                     subtitle = "Verified Student Housing"
                 )
 
-                // Actions: AI Chatbot, Push Notifs, Portal Switcher
+                // Actions: AI Chatbot, Push Notifs, User Profile / Auth Button
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -115,7 +126,7 @@ fun BedSpaceTopBar(
                             .testTag("topbar_chatbot_button")
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(3.dp)
                         ) {
@@ -123,7 +134,7 @@ fun BedSpaceTopBar(
                                 imageVector = Icons.Default.SmartToy,
                                 contentDescription = "AI Advisor",
                                 tint = Blue600,
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(14.dp)
                             )
                             Text(
                                 text = "AI Help",
@@ -147,13 +158,13 @@ fun BedSpaceTopBar(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "Notifications",
                             tint = Navy800,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                         if (unreadCount > 0) {
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    .size(14.dp)
+                                    .size(13.dp)
                                     .clip(CircleShape)
                                     .background(Red600),
                                 contentAlignment = Alignment.Center
@@ -162,7 +173,7 @@ fun BedSpaceTopBar(
                                     text = "$unreadCount",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = White,
-                                        fontSize = 9.sp,
+                                        fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
@@ -170,121 +181,95 @@ fun BedSpaceTopBar(
                         }
                     }
 
-                    // Portal Switcher Pill Button
+                    // User Profile / Auth Pill
                     Box {
                         Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = when (currentDestination) {
-                                AppDestination.LANDING -> Slate100
-                                AppDestination.STUDENT -> Blue50
-                                AppDestination.LANDLORD -> Green50
-                                AppDestination.ADMIN -> Slate100
-                            },
-                            border = BorderStroke(
-                                1.dp,
-                                when (currentDestination) {
-                                    AppDestination.LANDING -> Slate300
-                                    AppDestination.STUDENT -> Blue100
-                                    AppDestination.LANDLORD -> Green100
-                                    AppDestination.ADMIN -> Slate300
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (currentUser != null) {
+                                when (currentUser!!.role) {
+                                    UserRole.ADMIN -> Slate100
+                                    UserRole.LANDLORD -> Green50
+                                    UserRole.STUDENT -> Blue50
                                 }
-                            ),
+                            } else Slate100,
+                            border = BorderStroke(1.dp, Slate300),
                             modifier = Modifier
-                                .clickable { showPortalMenu = true }
-                                .testTag("portal_switcher_btn")
+                                .clickable {
+                                    if (currentUser == null) onOpenAuth() else showUserMenu = true
+                                }
+                                .testTag("topbar_user_profile_btn")
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = when (currentDestination) {
-                                        AppDestination.LANDING -> Icons.Filled.Language
-                                        AppDestination.STUDENT -> Icons.Filled.School
-                                        AppDestination.LANDLORD -> Icons.Filled.Apartment
-                                        AppDestination.ADMIN -> Icons.Filled.AdminPanelSettings
-                                    },
+                                    imageVector = if (currentUser?.role == UserRole.ADMIN) Icons.Filled.AdminPanelSettings else Icons.Filled.Person,
                                     contentDescription = null,
-                                    tint = when (currentDestination) {
-                                        AppDestination.LANDING -> Slate700
-                                        AppDestination.STUDENT -> Blue600
-                                        AppDestination.LANDLORD -> Green700
-                                        AppDestination.ADMIN -> Navy800
-                                    },
+                                    tint = if (currentUser?.role == UserRole.LANDLORD) Green700 else if (currentUser?.role == UserRole.STUDENT) Blue600 else Navy800,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = when (currentDestination) {
-                                        AppDestination.LANDING -> "Public"
-                                        AppDestination.STUDENT -> "Student"
-                                        AppDestination.LANDLORD -> "Landlord"
-                                        AppDestination.ADMIN -> "Admin"
-                                    },
+                                    text = currentUser?.name?.split(" ")?.first() ?: "Sign In",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = Navy900,
                                         fontSize = 11.sp
                                     )
                                 )
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowDropDown,
-                                    contentDescription = "Dropdown",
-                                    tint = Slate500,
-                                    modifier = Modifier.size(16.dp)
-                                )
                             }
                         }
 
-                        // Dropdown menu to switch UX Reference Screens
+                        // User Menu Dropdown
                         DropdownMenu(
-                            expanded = showPortalMenu,
-                            onDismissRequest = { showPortalMenu = false },
+                            expanded = showUserMenu,
+                            onDismissRequest = { showUserMenu = false },
                             modifier = Modifier.background(White)
                         ) {
-                            PortalMenuItem(
-                                title = "1. Public Landing Page (/)",
-                                subtitle = "Public student accommodation search",
-                                icon = Icons.Filled.Language,
-                                isSelected = currentDestination == AppDestination.LANDING,
-                                onClick = {
-                                    onNavigate(AppDestination.LANDING)
-                                    showPortalMenu = false
+                            if (currentUser != null) {
+                                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
+                                    Text(
+                                        text = currentUser!!.name,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Navy900,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        text = "${currentUser!!.email} • ${currentUser!!.role.label}",
+                                        color = Slate500,
+                                        fontSize = 10.sp
+                                    )
                                 }
-                            )
-                            HorizontalDivider(color = Slate100)
-                            PortalMenuItem(
-                                title = "2. Student Dashboard (/student/dashboard)",
-                                subtitle = "Saved accommodation & booking requests",
-                                icon = Icons.Filled.School,
-                                isSelected = currentDestination == AppDestination.STUDENT,
-                                onClick = {
-                                    onNavigate(AppDestination.STUDENT)
-                                    showPortalMenu = false
-                                }
-                            )
-                            HorizontalDivider(color = Slate100)
-                            PortalMenuItem(
-                                title = "3. Landlord Dashboard (/landlord/dashboard)",
-                                subtitle = "Verification, listings & request approvals",
-                                icon = Icons.Filled.Apartment,
-                                isSelected = currentDestination == AppDestination.LANDLORD,
-                                onClick = {
-                                    onNavigate(AppDestination.LANDLORD)
-                                    showPortalMenu = false
-                                }
-                            )
-                            HorizontalDivider(color = Slate100)
-                            PortalMenuItem(
-                                title = "4. Admin Console (/admin)",
-                                subtitle = "Verification queues & listing approvals",
-                                icon = Icons.Filled.AdminPanelSettings,
-                                isSelected = currentDestination == AppDestination.ADMIN,
-                                onClick = {
-                                    onNavigate(AppDestination.ADMIN)
-                                    showPortalMenu = false
-                                }
-                            )
+                                HorizontalDivider(color = Slate100)
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Filled.Logout, contentDescription = null, tint = Red600, modifier = Modifier.size(16.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text("Sign Out", color = Red600, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    },
+                                    onClick = {
+                                        AuthRepository.logout()
+                                        showUserMenu = false
+                                        onNavigate(AppDestination.LANDING)
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Filled.Person, contentDescription = null, tint = Blue600, modifier = Modifier.size(16.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text("Switch User / Sign In", color = Navy900, fontSize = 12.sp)
+                                        }
+                                    },
+                                    onClick = {
+                                        showUserMenu = false
+                                        onOpenAuth()
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -295,11 +280,11 @@ fun BedSpaceTopBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Slate50)
-                    .padding(horizontal = 6.dp, vertical = 3.dp),
+                    .padding(horizontal = 4.dp, vertical = 3.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 PortalTab(
-                    title = "Landing",
+                    title = "Find Rooms",
                     icon = Icons.Filled.Language,
                     isSelected = currentDestination == AppDestination.LANDING,
                     onClick = { onNavigate(AppDestination.LANDING) },
@@ -309,22 +294,54 @@ fun BedSpaceTopBar(
                     title = "Student",
                     icon = Icons.Filled.School,
                     isSelected = currentDestination == AppDestination.STUDENT,
-                    onClick = { onNavigate(AppDestination.STUDENT) },
+                    onClick = {
+                        if (currentUser == null) {
+                            onOpenAuth()
+                        } else {
+                            onNavigate(AppDestination.STUDENT)
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 )
                 PortalTab(
                     title = "Landlord",
                     icon = Icons.Filled.Apartment,
                     isSelected = currentDestination == AppDestination.LANDLORD,
-                    onClick = { onNavigate(AppDestination.LANDLORD) },
+                    onClick = {
+                        if (currentUser == null) {
+                            onOpenAuth()
+                        } else {
+                            onNavigate(AppDestination.LANDLORD)
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 )
                 PortalTab(
                     title = "Admin",
                     icon = Icons.Filled.AdminPanelSettings,
                     isSelected = currentDestination == AppDestination.ADMIN,
-                    onClick = { onNavigate(AppDestination.ADMIN) },
+                    onClick = {
+                        if (currentUser == null || currentUser?.role != UserRole.ADMIN) {
+                            onOpenAuth()
+                        } else {
+                            onNavigate(AppDestination.ADMIN)
+                        }
+                    },
                     modifier = Modifier.weight(1f)
+                )
+                PortalTab(
+                    title = "FAQs",
+                    icon = Icons.Filled.HelpOutline,
+                    isSelected = currentDestination == AppDestination.FAQS,
+                    onClick = { onNavigate(AppDestination.FAQS) },
+                    modifier = Modifier.weight(0.9f)
+                )
+                PortalTab(
+                    title = "Privacy",
+                    icon = Icons.Filled.Policy,
+                    isSelected = currentDestination == AppDestination.PRIVACY_POLICY,
+                    onClick = { onNavigate(AppDestination.PRIVACY_POLICY) },
+                    modifier = Modifier.weight(0.9f)
                 )
             }
         }

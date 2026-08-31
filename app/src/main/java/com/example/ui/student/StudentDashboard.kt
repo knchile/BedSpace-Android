@@ -19,20 +19,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.HourglassTop
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Payment
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -50,11 +49,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.auth.AuthRepository
 import com.example.data.neon.NeonRepository
+import com.example.data.payment.PaymentRepository
 import com.example.model.BookingRequest
 import com.example.model.BookingStatus
 import com.example.model.Property
@@ -63,22 +63,20 @@ import com.example.ui.components.ListingCard
 import com.example.ui.components.PropertyDetailDialog
 import com.example.ui.components.ProtectedContactPanel
 import com.example.ui.components.StatCard
+import com.example.ui.payment.PaymentDialog
 import com.example.ui.theme.Blue100
 import com.example.ui.theme.Blue50
 import com.example.ui.theme.Blue600
+import com.example.ui.theme.Green100
 import com.example.ui.theme.Green50
 import com.example.ui.theme.Green700
 import com.example.ui.theme.Navy800
 import com.example.ui.theme.Navy900
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
-import com.example.ui.theme.Slate300
-import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate50
 import com.example.ui.theme.Slate500
-import com.example.ui.theme.Slate600
 import com.example.ui.theme.Slate700
-import com.example.ui.theme.Slate800
 import com.example.ui.theme.White
 
 @Composable
@@ -87,19 +85,37 @@ fun StudentDashboard(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val currentUser by AuthRepository.currentUser.collectAsState()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    var searchQuery by remember { mutableStateOf("") }
     var selectedPropertyForDetail by remember { mutableStateOf<Property?>(null) }
+    var selectedPropertyForPayment by remember { mutableStateOf<Pair<Property, String>?>(null) }
 
-    // Neon StateFlow
+    // Neon & Payment StateFlows
     val properties by NeonRepository.properties.collectAsState()
-    val studentRequests by NeonRepository.studentRequests.collectAsState()
+    val allStudentRequests by NeonRepository.studentRequests.collectAsState()
+    val allTransactions by PaymentRepository.transactions.collectAsState()
 
-    val savedCount = 4
+    // Filter requests strictly to the logged-in student (account isolation)
+    val userEmail = currentUser?.email?.lowercase() ?: ""
+    val userName = currentUser?.name?.lowercase() ?: ""
+    val studentRequests = remember(allStudentRequests, userEmail, userName) {
+        if (currentUser == null) emptyList()
+        else allStudentRequests.filter { req ->
+            req.studentEmail.lowercase() == userEmail || req.studentName.lowercase() == userName
+        }
+    }
+
+    val studentTransactions = remember(allTransactions, currentUser) {
+        if (currentUser == null) emptyList()
+        else allTransactions.filter { 
+            it.studentId == currentUser!!.id || it.studentName.equals(currentUser!!.name, ignoreCase = true) 
+        }
+    }
+
     val pendingRequestsCount = studentRequests.count { it.status == BookingStatus.PENDING }
     val confirmedCount = studentRequests.count { it.status == BookingStatus.CONFIRMED }
 
-    val tabs = listOf("Overview", "Recommended", "My Requests (${studentRequests.size})", "Profile")
+    val tabs = listOf("Overview", "Recommended", "My Bookings (${studentRequests.size})", "Payments (${studentTransactions.size})", "Profile")
 
     LazyColumn(
         modifier = modifier
@@ -124,7 +140,7 @@ fun StudentDashboard(
                     ) {
                         Column {
                             Text(
-                                text = "Good morning, Thabo 👋",
+                                text = "Welcome, ${currentUser?.name ?: "Student"} 👋",
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.ExtraBold,
                                     color = Navy900
@@ -132,7 +148,7 @@ fun StudentDashboard(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Find verified accommodation near your campus.",
+                                text = "Your personal student housing & payment portal.",
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     color = Slate500
                                 )
@@ -157,7 +173,7 @@ fun StudentDashboard(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "TM",
+                                        text = (currentUser?.name?.take(2)?.uppercase()) ?: "ST",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             color = White,
                                             fontWeight = FontWeight.Bold
@@ -167,176 +183,78 @@ fun StudentDashboard(
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Column {
                                     Text(
-                                        text = "UNZA Student",
+                                        text = currentUser?.institution ?: "Student",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             color = Navy900
                                         )
                                     )
                                     Text(
-                                        text = "Great East Rd",
+                                        text = "Active Account",
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            color = Slate500,
-                                            fontSize = 9.sp
+                                            color = Green700,
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold
                                         )
                                     )
                                 }
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Inline Search Bar
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholder = {
-                            Text(
-                                text = "Search by area, price (e.g. K1500), wifi...",
-                                style = MaterialTheme.typography.bodyMedium.copy(color = Slate400)
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = null,
-                                tint = Slate400,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Slate50,
-                            unfocusedContainerColor = Slate50,
-                            focusedBorderColor = Blue600,
-                            unfocusedBorderColor = Slate300
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("student_search_input")
-                    )
                 }
             }
         }
 
-        // 2. STATS OVERVIEW CARDS
+        // 2. SUMMARY METRIC STATS ROW
         item {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    StatCard(
-                        title = "Saved Places",
-                        value = "$savedCount",
-                        subtitle = "Quick viewing list",
-                        icon = Icons.Filled.Bookmark,
-                        accentColor = Blue600,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatCard(
-                        title = "Active Requests",
-                        value = "$pendingRequestsCount",
-                        subtitle = "Awaiting landlord review",
-                        icon = Icons.Filled.HourglassTop,
-                        accentColor = Slate700,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    StatCard(
-                        title = "Confirmed Bookings",
-                        value = "$confirmedCount",
-                        subtitle = "Phone numbers unlocked",
-                        icon = Icons.Filled.CheckCircle,
-                        accentColor = Green700,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatCard(
-                        title = "Scam Protection",
-                        value = "100%",
-                        subtitle = "Verified landlords only",
-                        icon = Icons.Filled.Lock,
-                        accentColor = Blue600,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
-
-        // AI Advisor Prompt Card
-        item {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = Blue50,
-                border = BorderStroke(1.dp, Blue100),
+            Spacer(modifier = Modifier.height(14.dp))
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable { onOpenChatBot() }
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(Blue600),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(imageVector = Icons.Default.SmartToy, contentDescription = null, tint = White, modifier = Modifier.size(20.dp))
-                        }
-                        Column {
-                            Text(
-                                text = "Need Help Picking a Room?",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Navy900)
-                            )
-                            Text(
-                                text = "Chat with BedSpace AI to compare boarding houses & prices",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Slate600, fontSize = 11.sp)
-                            )
-                        }
-                    }
-                    Button(
-                        onClick = onOpenChatBot,
-                        colors = ButtonDefaults.buttonColors(containerColor = Navy800),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Chat Now", fontSize = 11.sp)
-                    }
-                }
+                StatCard(
+                    title = "Pending",
+                    value = "$pendingRequestsCount",
+                    icon = Icons.Filled.HourglassTop,
+                    accentColor = Blue600,
+                    modifier = Modifier.weight(1f)
+                )
+                StatCard(
+                    title = "Confirmed",
+                    value = "$confirmedCount",
+                    icon = Icons.Filled.CheckCircle,
+                    accentColor = Green700,
+                    modifier = Modifier.weight(1f)
+                )
+                StatCard(
+                    title = "Payments",
+                    value = "${studentTransactions.size}",
+                    icon = Icons.Filled.AccountBalanceWallet,
+                    accentColor = Blue600,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 
-        // 3. TABS
+        // 3. TABS HEADER
         item {
             Spacer(modifier = Modifier.height(14.dp))
             ScrollableTabRow(
                 selectedTabIndex = selectedTabIndex,
                 containerColor = White,
                 contentColor = Blue600,
-                edgePadding = 16.dp,
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
                         color = Blue600
                     )
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(10.dp))
             ) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
@@ -359,7 +277,7 @@ fun StudentDashboard(
         // 4. TAB CONTENTS
         when (selectedTabIndex) {
             0 -> {
-                // OVERVIEW TAB: Recent Requests & Recommended
+                // OVERVIEW TAB
                 item {
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
@@ -372,17 +290,45 @@ fun StudentDashboard(
                     )
                 }
 
-                items(studentRequests.take(2), key = { it.id }) { request ->
-                    StudentRequestCard(
-                        request = request,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                    )
+                if (studentRequests.isEmpty()) {
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("No Active Bookings Yet", fontWeight = FontWeight.Bold, color = Navy900)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    "Browse verified rooms below and send an inquiry or reservation request.",
+                                    color = Slate500,
+                                    fontSize = 12.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(studentRequests.take(2), key = { it.id }) { request ->
+                        StudentRequestCard(
+                            request = request,
+                            onPay = {
+                                val prop = properties.find { it.id == request.propertyId } ?: properties.first()
+                                selectedPropertyForPayment = Pair(prop, request.id)
+                            },
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        )
+                    }
                 }
 
                 item {
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        text = "Recommended for UNZA Students",
+                        text = "Recommended Accommodation",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Navy900
@@ -405,7 +351,7 @@ fun StudentDashboard(
                 item {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Verified Boarding Houses Near UNZA",
+                        text = "Verified Boarding Houses Near Campus",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Navy900
@@ -428,7 +374,7 @@ fun StudentDashboard(
                 item {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "All Booking Requests & Inquiries",
+                        text = "Your Isolated Booking Requests",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Navy900
@@ -437,24 +383,139 @@ fun StudentDashboard(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Phone numbers are revealed automatically when verified landlords confirm your booking.",
+                        text = "Only you can see these requests. Landlord phone numbers unlock automatically upon booking confirmation or payment.",
                         style = MaterialTheme.typography.bodySmall.copy(color = Slate500),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
 
-                items(studentRequests, key = { it.id }) { request ->
-                    StudentRequestCard(
-                        request = request,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                    )
+                if (studentRequests.isEmpty()) {
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("No requests sent yet", fontWeight = FontWeight.Bold, color = Navy900)
+                                Text("Select an accommodation from the Recommended tab to send a booking request.", color = Slate500, fontSize = 12.sp)
+                            }
+                        }
+                    }
+                } else {
+                    items(studentRequests, key = { it.id }) { request ->
+                        StudentRequestCard(
+                            request = request,
+                            onPay = {
+                                val prop = properties.find { it.id == request.propertyId } ?: properties.first()
+                                selectedPropertyForPayment = Pair(prop, request.id)
+                            },
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        )
+                    }
                 }
             }
 
             3 -> {
+                // PAYMENTS TAB
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Mobile Money Payment History",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Navy900
+                        ),
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Official digital receipts for Airtel Money, MTN MoMo, and Card transactions.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = Slate500),
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+
+                if (studentTransactions.isEmpty()) {
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Filled.Receipt, contentDescription = null, tint = Slate500, modifier = Modifier.size(32.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("No Mobile Money Payments Yet", fontWeight = FontWeight.Bold, color = Navy900)
+                                Text("When you pay a K200 reservation deposit or monthly rent, receipts appear here.", color = Slate500, fontSize = 12.sp)
+                            }
+                        }
+                    }
+                } else {
+                    items(studentTransactions, key = { it.id }) { tx ->
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 6.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = Green50,
+                                        border = BorderStroke(1.dp, Green100)
+                                    ) {
+                                        Text(
+                                            text = tx.status.label,
+                                            color = Green700,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 10.sp,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = tx.dateFormatted,
+                                        style = MaterialTheme.typography.labelSmall.copy(color = Slate500)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = tx.propertyTitle,
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = Navy900)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Amount: ZMW K${tx.amountKwacha} • Paid via ${tx.provider.label}",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Slate700)
+                                )
+                                Text(
+                                    text = "Ref: ${tx.referenceCode} • Landlord: ${tx.landlordName}",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = Slate500)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            4 -> {
                 // PROFILE TAB
                 item {
                     StudentProfileCard(
+                        user = currentUser,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
@@ -479,9 +540,9 @@ fun StudentDashboard(
                     institution = prop.institution,
                     roomType = prop.roomType,
                     monthlyPrice = prop.priceMonthlyKwacha,
-                    studentName = "Thabo Musonda",
-                    studentPhone = "+260 97 112 3344",
-                    studentEmail = "thabo.unza@gmail.com",
+                    studentName = currentUser?.name ?: "Student User",
+                    studentPhone = currentUser?.phone ?: "+260 97 000 0000",
+                    studentEmail = currentUser?.email ?: "student@bedspace.zm",
                     landlordName = prop.landlordName,
                     landlordPhone = "+260 96 688 2244",
                     landlordWhatsapp = "+260 96 688 2244",
@@ -494,12 +555,26 @@ fun StudentDashboard(
             }
         )
     }
+
+    // Mobile Money Payment Dialog
+    if (selectedPropertyForPayment != null) {
+        val (prop, bookingId) = selectedPropertyForPayment!!
+        PaymentDialog(
+            property = prop,
+            bookingId = bookingId,
+            onDismiss = { selectedPropertyForPayment = null },
+            onPaymentSuccess = { _ ->
+                selectedPropertyForPayment = null
+            }
+        )
+    }
 }
 
 // Student Request Item Card
 @Composable
 private fun StudentRequestCard(
     request: BookingRequest,
+    onPay: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -534,7 +609,7 @@ private fun StudentRequestCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "${request.roomType.label} · Landlord: ${request.landlordName}",
+                text = "${request.roomType.label} · Landlord: ${request.landlordName} · K${request.monthlyPrice}/mo",
                 style = MaterialTheme.typography.bodySmall.copy(color = Slate700)
             )
 
@@ -561,12 +636,33 @@ private fun StudentRequestCard(
                 whatsapp = request.landlordWhatsapp,
                 isConfirmed = request.status == BookingStatus.CONFIRMED
             )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Mobile Money Payment Action Button
+            Button(
+                onClick = onPay,
+                colors = ButtonDefaults.buttonColors(containerColor = if (request.status == BookingStatus.CONFIRMED) Green700 else Navy800),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Filled.Payment, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (request.status == BookingStatus.CONFIRMED) "Pay First Month Rent (Airtel / MTN)" else "Pay K200 Reservation Deposit",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun StudentProfileCard(modifier: Modifier = Modifier) {
+private fun StudentProfileCard(
+    user: com.example.model.User?,
+    modifier: Modifier = Modifier
+) {
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = White),
@@ -575,20 +671,24 @@ private fun StudentProfileCard(modifier: Modifier = Modifier) {
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "Student Profile",
+                text = "Your Student Account",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = Navy900
                 )
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Text(text = "Name: Thabo Musonda", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Full Name: ${user?.name ?: "Student"}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Institution: University of Zambia (UNZA)", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Email: ${user?.email ?: "student@bedspace.zm"}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Phone: +260 97 112 3344", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Institution: ${user?.institution ?: "University of Zambia (UNZA)"}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Email: thabo.unza@gmail.com", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Phone: ${user?.phone ?: "+260 97 000 0000"}", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(text = "Student ID: ${user?.studentId ?: "2026/088"}", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(text = "Status: Verified Student", style = MaterialTheme.typography.bodyMedium, color = Green700, fontWeight = FontWeight.Bold)
         }
     }
 }
