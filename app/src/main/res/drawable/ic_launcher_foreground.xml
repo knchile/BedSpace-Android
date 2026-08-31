@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Modern stylized building/house roofline and bed structure with verified badge in 66dp safe zone (21..87) -->
+    <!-- Building roof / House frame -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,28 L30,46 L35,50 L54,35.5 L73,50 L78,46 Z" />
+    <!-- Pillars / Bed posts and headboard -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M34,50 L40,50 L40,74 L34,74 Z" />
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M68,50 L74,50 L74,74 L68,74 Z" />
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M38,62 L70,62 L70,72 L38,72 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,54 L52,54 L52,60 L42,60 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,54 L66,54 L66,60 L56,60 Z" />
+    <!-- Verified Badge (Shield with Checkmark in Green) -->
+    <path
+        android:fillColor="#22C55E"
+        android:pathData="M54,66 C62,66 66,71 66,77 C66,84 54,88 54,88 C54,88 42,84 42,77 C42,71 46,66 54,66 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M51.5,79.5 L46.5,74.5 L48.5,72.5 L51.5,75.5 L59.5,67.5 L61.5,69.5 Z" />
+</vector>

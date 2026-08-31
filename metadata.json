@@ -1,0 +1,6 @@
+{
+  "name": "BedSpaceZM",
+  "description": "Verified student accommodation marketplace in Zambia with dedicated student, landlord, and admin portals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
