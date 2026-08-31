@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BedSpaceZM · Verified Student Accommodation in Zambia</title>
+  <meta name="description" content="Find safe, verified student boarding houses near UNZA, CBU, Mulungushi, Evelyn Hone, and Apex Medical University. Protected contacts, scam-free guarantee, and AI assistance." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              800: '#0F172A',
+              900: '#020617',
+            },
+            brand: {
+              50: '#EFF6FF',
+              100: '#DBEAFE',
+              500: '#3B82F6',
+              600: '#2563EB',
+              700: '#1D4ED8',
+            },
+            trust: {
+              50: '#ECFDF5',
+              100: '#D1FAE5',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .badge-verified { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+    .badge-institution { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+    .modal-backdrop { background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP BAR / ANNOUNCEMENT -->
+  <div class="bg-navy-900 text-white text-xs py-2 px-4 flex justify-between items-center">
+    <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+      <span class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>100% Anti-Scam Protection: Landlord NRCs & Council Rates Verified</span>
+      </span>
+      <div class="flex items-center gap-4">
+        <span class="hidden sm:inline text-slate-400">Available on Web & Android Native</span>
+        <button onclick="switchTab('download')" class="bg-brand-600 hover:bg-brand-500 text-white px-2.5 py-1 rounded font-semibold text-[11px] transition">
+          📱 Android APK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('explore')">
+        <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-black text-xl shadow-sm">
+          B
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-tight text-navy-900">BedSpace<span class="text-brand-600">ZM</span></span>
+            <span class="badge-verified text-[10px] px-1.5 py-0.5 rounded-full font-bold">VERIFIED</span>
+          </div>
+          <p class="text-[10px] text-slate-500 font-medium">Zambian Student Housing Platform</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center gap-1">
+        <button id="nav-explore" onclick="switchTab('explore')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition">
+          Find Housing
+        </button>
+        <button id="nav-student" onclick="switchTab('student')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">
+          Student Portal
+        </button>
+        <button id="nav-landlord" onclick="switchTab('landlord')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">
+          Landlord KYC
+        </button>
+        <button id="nav-admin" onclick="switchTab('admin')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">
+          Admin Console
+        </button>
+        <button id="nav-ai" onclick="switchTab('ai')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-brand-600"></span>
+          AI Advisor
+        </button>
+      </nav>
+
+      <!-- Action Button -->
+      <div class="flex items-center gap-2">
+        <button onclick="openChatModal()" class="hidden sm:flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-navy-900 px-3 py-2 rounded-lg text-xs font-semibold transition">
+          <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+          Ask BedSpace AI
+        </button>
+        <a href="/bedspace-zm.apk" download="BedSpaceZM.apk" class="bg-navy-800 hover:bg-navy-900 text-white px-4 py-2 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          Download APK
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- 1. EXPLORE & SEARCH VIEW -->
+    <section id="view-explore" class="space-y-6">
+      <!-- HERO BANNER -->
+      <div class="bg-gradient-to-r from-navy-900 via-slate-900 to-brand-700 rounded-2xl p-6 sm:p-10 text-white shadow-sm relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+          <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold mb-4 border border-white/20">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Verified Boarding Houses Near Zambian Campuses
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-3">
+            Find Safe Student Housing. Zero Scammers.
+          </h1>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+            Directly connect with vetted Zambian landlords near UNZA, CBU, Mulungushi, Evelyn Hone & Apex. Phone numbers are protected until booking inquiries are approved.
+          </p>
+
+          <!-- Search Filter Box -->
+          <div class="bg-white p-3 rounded-xl shadow-lg flex flex-col md:flex-row gap-2 text-slate-800">
+            <div class="flex-1 flex items-center px-3 border border-slate-200 rounded-lg bg-slate-50">
+              <svg class="w-4 h-4 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <input id="searchInput" oninput="filterProperties()" type="text" placeholder="Search area, amenities, or room type..." class="w-full bg-transparent py-2 text-xs sm:text-sm outline-none" />
+            </div>
+
+            <select id="universityFilter" onchange="filterProperties()" class="border border-slate-200 rounded-lg px-3 py-2 text-xs sm:text-sm bg-slate-50 outline-none font-medium">
+              <option value="ALL">All Universities</option>
+              <option value="UNZA">UNZA (Great East Rd)</option>
+              <option value="CBU">CBU (Riverside Kitwe)</option>
+              <option value="MULUNGUSHI">Mulungushi (Kabwe)</option>
+              <option value="EVELYN_HONE">Evelyn Hone (Lusaka)</option>
+              <option value="APEX">Apex Medical University</option>
+            </select>
+
+            <select id="roomFilter" onchange="filterProperties()" class="border border-slate-200 rounded-lg px-3 py-2 text-xs sm:text-sm bg-slate-50 outline-none font-medium">
+              <option value="ALL">All Room Types</option>
+              <option value="SINGLE_ROOM">Single Room (Self-Contained)</option>
+              <option value="DOUBLE_SHARING">2 in a Room</option>
+              <option value="FOUR_SHARING">4 in a Room</option>
+              <option value="BEDSPACE">Bedspace / Shared</option>
+            </select>
+
+            <select id="priceFilter" onchange="filterProperties()" class="border border-slate-200 rounded-lg px-3 py-2 text-xs sm:text-sm bg-slate-50 outline-none font-medium">
+              <option value="ALL">Any Budget</option>
+              <option value="1200">Under K1,200/mo</option>
+              <option value="1800">Under K1,800/mo</option>
+              <option value="2500">Under K2,500/mo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS STRIP -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Active Accommodations</p>
+          <p class="text-xl font-extrabold text-navy-900 mt-1" id="stat-count">8 Verified Listings</p>
+          <p class="text-[11px] text-emerald-600 font-semibold mt-0.5">✓ 100% In-Person Vetted</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Supported Campuses</p>
+          <p class="text-xl font-extrabold text-navy-900 mt-1">5 Major Universities</p>
+          <p class="text-[11px] text-brand-600 font-semibold mt-0.5">Lusaka, Kitwe & Kabwe</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Scam Prevention</p>
+          <p class="text-xl font-extrabold text-emerald-600 mt-1">NRC & Deed Verification</p>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Protected landlord contacts</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Database Layer</p>
+          <p class="text-xl font-extrabold text-navy-900 mt-1">Neon Postgres</p>
+          <p class="text-[11px] text-brand-600 font-semibold mt-0.5">Real-time sync enabled</p>
+        </div>
+      </div>
+
+      <!-- PROPERTY GRID -->
+      <div>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-navy-900">Featured & Verified Accommodations</h2>
+          <span class="text-xs text-slate-500" id="filter-status-text">Showing all properties</span>
+        </div>
+        <div id="propertyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. STUDENT PORTAL VIEW -->
+    <section id="view-student" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-100">
+          <div>
+            <span class="badge-institution text-xs px-2 py-0.5 rounded-full font-bold">UNZA STUDENT PORTAL</span>
+            <h2 class="text-2xl font-extrabold text-navy-900 mt-1">Student Booking & Inquiry Dashboard</h2>
+            <p class="text-sm text-slate-500">Track your requests, verify prices, and access landlord contact details once confirmed.</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">TM</div>
+            <div>
+              <p class="text-xs font-bold text-navy-900">Thabo Musonda</p>
+              <p class="text-[11px] text-slate-500">thabo.unza@gmail.com · +260 97 112 3344</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-base font-bold text-navy-900 mb-3">Your Sent Inquiries & Booking Status</h3>
+          <div id="studentRequestsList" class="space-y-4">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. LANDLORD PORTAL VIEW -->
+    <section id="view-landlord" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="badge-verified text-xs px-2 py-0.5 rounded-full font-bold">VERIFIED LANDLORD</span>
+              <span class="text-xs text-emerald-600 font-bold">● KYC Compliant</span>
+            </div>
+            <h2 class="text-2xl font-extrabold text-navy-900 mt-1">Mr. Mwansa Tembo's Landlord Portal</h2>
+            <p class="text-sm text-slate-500">Manage boarding houses, approve student requests, and maintain verified status.</p>
+          </div>
+          <button onclick="openAddPropertyModal()" class="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
+            <span>+</span> Add Boarding House
+          </button>
+        </div>
+
+        <!-- KYC Verification Status Card -->
+        <div class="mt-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">✓</div>
+              <div>
+                <h4 class="text-sm font-bold text-emerald-900">National Registration Card & Rates Verified</h4>
+                <p class="text-xs text-emerald-700">NRC: 194820/11/1 · Lusaka City Council Rates 2026 Cleared · Approved by Trust & Safety</p>
+              </div>
+            </div>
+            <span class="bg-white text-emerald-800 text-xs px-2.5 py-1 rounded-lg border border-emerald-300 font-bold">Active Badge</span>
+          </div>
+        </div>
+
+        <!-- Incoming Requests Table -->
+        <div class="mt-6">
+          <h3 class="text-base font-bold text-navy-900 mb-3">Incoming Student Booking Inquiries</h3>
+          <div id="landlordIncomingList" class="space-y-3">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ADMIN CONSOLE VIEW -->
+    <section id="view-admin" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="pb-6 border-b border-slate-100">
+          <span class="bg-slate-900 text-white text-[11px] px-2.5 py-0.5 rounded-full font-bold">BEDSPACE TRUST & SAFETY CONSOLE</span>
+          <h2 class="text-2xl font-extrabold text-navy-900 mt-1">Admin Verification & Anti-Scam Queue</h2>
+          <p class="text-sm text-slate-500">Moderating Zambian landlord submissions, verifying NRCs, and clearing physical inspection tickets.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+            <p class="text-xs font-semibold text-slate-500">Pending KYC Documents</p>
+            <p class="text-2xl font-extrabold text-navy-900 mt-1">3 Under Review</p>
+            <p class="text-xs text-amber-600 font-medium mt-1">Requires NRC Cross-Match</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+            <p class="text-xs font-semibold text-slate-500">Scam Prevention Score</p>
+            <p class="text-2xl font-extrabold text-emerald-600 mt-1">99.8% Safety</p>
+            <p class="text-xs text-slate-500 font-medium mt-1">0 unvetted contacts shared</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+            <p class="text-xs font-semibold text-slate-500">Postgres Database</p>
+            <p class="text-2xl font-extrabold text-brand-600 mt-1">Connected</p>
+            <p class="text-xs text-slate-500 font-medium mt-1">Neon Serverless Pool active</p>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-base font-bold text-navy-900 mb-3">Verification Review Queue</h3>
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Landlord Name</th>
+                  <th class="p-3">Document Type</th>
+                  <th class="p-3">Property</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <tr>
+                  <td class="p-3 font-semibold text-navy-900">Mr. Mwansa Tembo</td>
+                  <td class="p-3">Zambian NRC + Title Deed</td>
+                  <td class="p-3">Campus View Lodge (UNZA)</td>
+                  <td class="p-3"><span class="badge-verified px-2 py-0.5 rounded-full font-bold">APPROVED</span></td>
+                  <td class="p-3 text-right"><span class="text-emerald-600 font-bold">Verified ✓</span></td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-semibold text-navy-900">Mrs. Chileshe Mulenga</td>
+                  <td class="p-3">NRC Front & Back</td>
+                  <td class="p-3">Riverside Annex (CBU)</td>
+                  <td class="p-3"><span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold">IN REVIEW</span></td>
+                  <td class="p-3 text-right"><button class="bg-brand-600 text-white px-2 py-1 rounded text-[11px] font-bold">Inspect NRC</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. AI ADVISOR VIEW -->
+    <section id="view-ai" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto">
+        <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-lg">🤖</div>
+          <div>
+            <h2 class="text-xl font-extrabold text-navy-900">BedSpace AI Student Housing Advisor</h2>
+            <p class="text-xs text-slate-500">Ask about rent rates, proximity to campus gates, safety, water & backup power.</p>
+          </div>
+        </div>
+
+        <div id="aiChatBox" class="h-96 overflow-y-auto space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200 my-4 text-xs">
+          <div class="bg-white p-3 rounded-xl border border-slate-200 max-w-md shadow-sm">
+            <p class="font-bold text-brand-600 mb-1">BedSpace AI Advisor:</p>
+            <p class="text-slate-700 leading-relaxed">Muli bwanji! I am your AI housing companion for Zambia. I can help you find verified boarding houses near <b>UNZA, CBU, Mulungushi, Evelyn Hone, or Apex</b>. What is your preferred campus or budget?</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <input id="aiInput" onkeypress="if(event.key==='Enter') sendAiMessage()" type="text" placeholder="e.g. Find me a single room near UNZA under K1,800 with backup power" class="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-brand-600 bg-slate-50" />
+          <button onclick="sendAiMessage()" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. DOWNLOAD ANDROID APK VIEW -->
+    <section id="view-download" class="hidden space-y-6">
+      <div class="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto text-center">
+        <div class="w-16 h-16 bg-brand-50 border border-brand-200 text-brand-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 font-black">
+          📱
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-navy-900 mb-2">Download BedSpaceZM for Android</h2>
+        <p class="text-slate-600 text-sm max-w-xl mx-auto mb-6">
+          Experience the full native Android app with real push notifications, Material 3 design, protected landlord contacts, and offline-first Room database.
+        </p>
+
+        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-left space-y-4 mb-6">
+          <h3 class="text-sm font-bold text-navy-900">How to install & export your APK:</h3>
+          <ol class="text-xs text-slate-700 space-y-2 list-decimal list-inside">
+            <li><b>AI Studio Direct Export:</b> In Google AI Studio, click the project settings / gear icon in the top bar and select <b>Download APK</b> or <b>Export ZIP</b>.</li>
+            <li><b>Via Android Studio:</b> Clone the GitHub repository, open in Android Studio, and run <code class="bg-slate-200 px-1.5 py-0.5 rounded font-mono">./gradlew assembleDebug</code>.</li>
+            <li><b>Install on Phone:</b> Transfer the generated <code class="bg-slate-200 px-1.5 py-0.5 rounded font-mono">app-debug.apk</code> to your Android device and tap to install.</li>
+          </ol>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+          <a href="/bedspace-zm.apk" download="BedSpaceZM.apk" class="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition inline-flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span>Download BedSpaceZM APK (23.5 MB)</span>
+          </a>
+          <button onclick="switchTab('explore')" class="bg-slate-100 hover:bg-slate-200 text-navy-900 px-6 py-3.5 rounded-xl font-bold text-sm transition">
+            Explore Web Version
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PROPERTY DETAIL / INQUIRY MODAL -->
+  <div id="bookingModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeBookingModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- CHATBOT FLOATING BUTTON -->
+  <div class="fixed bottom-6 right-6 z-40">
+    <button onclick="openChatModal()" class="bg-brand-600 hover:bg-brand-700 text-white p-3.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold transition hover:scale-105">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+      <span class="hidden sm:inline">BedSpace AI Advisor</span>
+    </button>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p>© 2026 BedSpaceZM. Verified Student Accommodation Platform for Zambia. Built with Android Kotlin & Web Companion.</p>
+      <div class="flex gap-4 font-semibold text-slate-600">
+        <a href="#" onclick="switchTab('explore')" class="hover:text-brand-600">Explore</a>
+        <a href="#" onclick="switchTab('landlord')" class="hover:text-brand-600">Landlord KYC</a>
+        <a href="#" onclick="switchTab('download')" class="hover:text-brand-600">Android APK</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    const propertiesData = [
+      {
+        id: 'prop_unza_1',
+        title: 'Campus View Lodge (UNZA Great East)',
+        institution: 'UNZA',
+        institutionLabel: 'University of Zambia',
+        distanceKm: 0.4,
+        priceMonthlyKwacha: 1800,
+        roomType: 'SINGLE_ROOM',
+        roomTypeLabel: 'Single Room (Self-Contained)',
+        landlordName: 'Mr. Mwansa Tembo',
+        landlordPhone: '+260 96 688 2244',
+        isVerified: true,
+        address: 'Plot 418, Kalingalinga near UNZA G-Block Gate, Lusaka',
+        description: 'Clean tiled room with study desk, high-speed WiFi, solar inverter backup power, and 24/7 borehole water supply.',
+        amenities: ['⚡ Backup Solar', '📶 5G WiFi', '💧 Borehole Water', '🛡️ Guard Security', '🚿 Ensuite Bathroom'],
+        availableRooms: 3,
+        totalRooms: 8
+      },
+      {
+        id: 'prop_apex_1',
+        title: 'Apex Medical Heights Hostel',
+        institution: 'APEX',
+        institutionLabel: 'Apex Medical University',
+        distanceKm: 0.6,
+        priceMonthlyKwacha: 2200,
+        roomType: 'SINGLE_ROOM',
+        roomTypeLabel: 'Single Ensuite (Medical Student Quiet)',
+        landlordName: 'Dr. Joseph Phiri',
+        landlordPhone: '+260 97 881 1990',
+        isVerified: true,
+        address: 'Off Kasama Road, Chalala near Apex Medical Campus, Lusaka',
+        description: 'Dedicated quiet study environment for medical students with silent solar inverter, hot shower geyser, and shared modern kitchen.',
+        amenities: ['⚡ 24/7 Power', '📶 Fast WiFi', '📚 Study Hall', '💧 Hot Water', '🛡️ CCTV Monitored'],
+        availableRooms: 2,
+        totalRooms: 12
+      },
+      {
+        id: 'prop_cbu_1',
+        title: 'Riverside Annex Lodge (CBU)',
+        institution: 'CBU',
+        institutionLabel: 'Copperbelt University',
+        distanceKm: 0.5,
+        priceMonthlyKwacha: 1200,
+        roomType: 'DOUBLE_SHARING',
+        roomTypeLabel: '2 in a Room (Double Sharing)',
+        landlordName: 'Mrs. Chileshe Mulenga',
+        landlordPhone: '+260 95 512 8833',
+        isVerified: true,
+        address: 'Riverside West, Jambo Drive near CBU Gate 2, Kitwe',
+        description: 'Spacious double room with built-in wardrobes, study tables, secure wall fence, and caretaker on premise.',
+        amenities: ['📶 WiFi Included', '💧 Constant Water', '🛡️ Wall Fence', '🍳 Kitchen Access'],
+        availableRooms: 4,
+        totalRooms: 10
+      },
+      {
+        id: 'prop_hone_1',
+        title: 'Evelyn Hone Central Annex',
+        institution: 'EVELYN_HONE',
+        institutionLabel: 'Evelyn Hone College',
+        distanceKm: 0.3,
+        priceMonthlyKwacha: 1400,
+        roomType: 'DOUBLE_SHARING',
+        roomTypeLabel: '2 in a Room (Shared)',
+        landlordName: 'Mr. Patrick Zulu',
+        landlordPhone: '+260 97 334 5566',
+        isVerified: true,
+        address: 'Church Road area near Evelyn Hone College, Lusaka',
+        description: 'Convenient walking distance to town and college. Water tank and paved yard with locked gate.',
+        amenities: ['💧 Water Tank', '🛡️ Secure Gate', '🚶 3 Mins Walk', '📶 WiFi'],
+        availableRooms: 1,
+        totalRooms: 6
+      },
+      {
+        id: 'prop_mulungushi_1',
+        title: 'Great North Student Haven (Mulungushi)',
+        institution: 'MULUNGUSHI',
+        institutionLabel: 'Mulungushi University',
+        distanceKm: 1.2,
+        priceMonthlyKwacha: 1100,
+        roomType: 'FOUR_SHARING',
+        roomTypeLabel: '4 in a Room (Quad Sharing)',
+        landlordName: 'Elder Kelvin Bwalya',
+        landlordPhone: '+260 96 445 7788',
+        isVerified: true,
+        address: 'Great North Road, Main Campus vicinity, Kabwe',
+        description: 'Budget-friendly accommodation with spacious bunks, study area, dining hall, and free weekend campus shuttle.',
+        amenities: ['🚌 Free Shuttle', '💧 Water Supply', '🛡️ Night Guard', '📶 WiFi'],
+        availableRooms: 6,
+        totalRooms: 20
+      },
+      {
+        id: 'prop_unza_2',
+        title: 'Handsworth Park Student Villa',
+        institution: 'UNZA',
+        institutionLabel: 'University of Zambia',
+        distanceKm: 1.1,
+        priceMonthlyKwacha: 2500,
+        roomType: 'SINGLE_ROOM',
+        roomTypeLabel: 'Luxury Single Self-Contained',
+        landlordName: 'Mrs. Gertrude Mwila',
+        landlordPhone: '+260 97 990 0112',
+        isVerified: true,
+        address: 'Handsworth Park, Off Great East Road, Lusaka',
+        description: 'Premium student living with air conditioning, swimming pool access, solar backup system, and daily cleaning.',
+        amenities: ['⚡ Solar Backup', '📶 Fiber WiFi', '❄️ Air Conditioner', '🛡️ Electric Fence'],
+        availableRooms: 2,
+        totalRooms: 4
+      }
+    ];
+
+    let studentRequests = [
+      {
+        id: 'req_1',
+        propertyTitle: 'Campus View Lodge (UNZA Great East)',
+        roomType: 'Single Room (Self-Contained)',
+        landlordName: 'Mr. Mwansa Tembo',
+        landlordPhone: '+260 96 688 2244',
+        status: 'CONFIRMED',
+        requestDate: 'Aug 28, 2026',
+        message: 'Hello, looking for a quiet room starting next semester. Is the backup solar active?'
+      },
+      {
+        id: 'req_2',
+        propertyTitle: 'Apex Medical Heights Hostel',
+        roomType: 'Single Ensuite',
+        landlordName: 'Dr. Joseph Phiri',
+        landlordPhone: '+260 97 881 1990',
+        status: 'PENDING',
+        requestDate: 'Aug 30, 2026',
+        message: 'Hi Dr. Phiri, I am a 3rd year medical student looking for a single room.'
+      }
+    ];
+
+    function renderProperties(list) {
+      const grid = document.getElementById('propertyGrid');
+      grid.innerHTML = '';
+      list.forEach(prop => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between';
+        card.innerHTML = `
+          <div>
+            <div class="h-44 bg-slate-800 relative p-4 flex flex-col justify-between text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);">
+              <div class="flex justify-between items-start">
+                <span class="badge-institution text-xs px-2.5 py-1 rounded-full font-bold bg-white/90 text-navy-900 border-none">
+                  ${prop.institution} · ${prop.distanceKm} km away
+                </span>
+                ${prop.isVerified ? '<span class="badge-verified text-xs px-2.5 py-1 rounded-full font-bold">✓ VERIFIED</span>' : ''}
+              </div>
+              <div>
+                <p class="text-xs text-brand-200 font-semibold">${prop.institutionLabel}</p>
+                <h3 class="text-base font-extrabold text-white leading-tight">${prop.title}</h3>
+              </div>
+            </div>
+
+            <div class="p-4 space-y-3">
+              <div class="flex justify-between items-baseline">
+                <div>
+                  <span class="text-2xl font-extrabold text-navy-900">K${prop.priceMonthlyKwacha}</span>
+                  <span class="text-xs text-slate-500 font-medium">/ month</span>
+                </div>
+                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded font-medium">${prop.roomTypeLabel}</span>
+              </div>
+
+              <p class="text-xs text-slate-600 line-clamp-2">${prop.description}</p>
+
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                ${prop.amenities.map(a => `<span class="bg-slate-100 text-slate-700 text-[11px] px-2 py-0.5 rounded font-medium">${a}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 pt-0 border-t border-slate-100 flex items-center justify-between mt-3">
+            <div class="text-[11px] text-slate-500">
+              <b>${prop.availableRooms}</b> of ${prop.totalRooms} rooms left
+            </div>
+            <button onclick="openBookingModal('${prop.id}')" class="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-lg text-xs font-bold transition">
+              Book / View Details
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      document.getElementById('stat-count').innerText = `${list.length} Verified Listings`;
+    }
+
+    function filterProperties() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const uni = document.getElementById('universityFilter').value;
+      const room = document.getElementById('roomFilter').value;
+      const price = document.getElementById('priceFilter').value;
+
+      const filtered = propertiesData.filter(p => {
+        const matchSearch = p.title.toLowerCase().includes(search) || p.description.toLowerCase().includes(search) || p.address.toLowerCase().includes(search);
+        const matchUni = uni === 'ALL' || p.institution === uni;
+        const matchRoom = room === 'ALL' || p.roomType === room;
+        const matchPrice = price === 'ALL' || p.priceMonthlyKwacha <= parseInt(price);
+        return matchSearch && matchUni && matchRoom && matchPrice;
+      });
+
+      renderProperties(filtered);
+    }
+
+    function openBookingModal(propId) {
+      const prop = propertiesData.find(p => p.id === propId);
+      if (!prop) return;
+      const modal = document.getElementById('bookingModal');
+      const content = document.getElementById('modalContent');
+      content.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="badge-institution text-xs px-2 py-0.5 rounded-full font-bold">${prop.institution}</span>
+            <span class="badge-verified text-xs px-2 py-0.5 rounded-full font-bold">✓ Anti-Scam Verified</span>
+          </div>
+          <h3 class="text-xl font-extrabold text-navy-900">${prop.title}</h3>
+          <p class="text-xs text-slate-500">${prop.address}</p>
+
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 grid grid-cols-2 gap-2 text-xs">
+            <div><span class="text-slate-500">Rent:</span> <b class="text-navy-900">K${prop.priceMonthlyKwacha} / month</b></div>
+            <div><span class="text-slate-500">Distance:</span> <b class="text-navy-900">${prop.distanceKm} km from campus</b></div>
+            <div><span class="text-slate-500">Room Type:</span> <b class="text-navy-900">${prop.roomTypeLabel}</b></div>
+            <div><span class="text-slate-500">Availability:</span> <b class="text-emerald-700">${prop.availableRooms} rooms free</b></div>
+          </div>
+
+          <p class="text-xs text-slate-700 leading-relaxed">${prop.description}</p>
+
+          <!-- Anti-Scam Notice -->
+          <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-xs space-y-1">
+            <p class="font-bold text-blue-900 flex items-center gap-1.5">
+              🛡️ Scam Protection Active
+            </p>
+            <p class="text-blue-800 text-[11px]">
+              Landlord: <b>${prop.landlordName}</b>. Phone numbers remain protected until you send a booking inquiry and the landlord confirms your availability.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700">Message to Landlord</label>
+            <textarea id="bookingMsg" class="w-full border border-slate-200 rounded-xl p-3 text-xs outline-none bg-slate-50 focus:border-brand-600" rows="3" placeholder="Hello, I am a student interested in renting this room for the upcoming term."></textarea>
+          </div>
+
+          <button onclick="submitBooking('${prop.id}')" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl text-xs transition">
+            Send Booking Inquiry to Landlord
+          </button>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function closeBookingModal() {
+      document.getElementById('bookingModal').classList.add('hidden');
+    }
+
+    function submitBooking(propId) {
+      const prop = propertiesData.find(p => p.id === propId);
+      const msg = document.getElementById('bookingMsg').value || 'Student booking inquiry.';
+      studentRequests.unshift({
+        id: 'req_' + Date.now(),
+        propertyTitle: prop.title,
+        roomType: prop.roomTypeLabel,
+        landlordName: prop.landlordName,
+        landlordPhone: prop.landlordPhone,
+        status: 'PENDING',
+        requestDate: 'Just now',
+        message: msg
+      });
+      closeBookingModal();
+      alert('🎉 Booking inquiry sent successfully to ' + prop.landlordName + '! You can view it under Student Portal.');
+      renderStudentRequests();
+      renderLandlordRequests();
+      switchTab('student');
+    }
+
+    function renderStudentRequests() {
+      const list = document.getElementById('studentRequestsList');
+      list.innerHTML = '';
+      studentRequests.forEach(req => {
+        const item = document.createElement('div');
+        item.className = 'border border-slate-200 rounded-xl p-4 bg-white shadow-sm space-y-2 text-xs';
+        const isConfirmed = req.status === 'CONFIRMED';
+        item.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="${isConfirmed ? 'badge-verified' : 'bg-amber-50 text-amber-800 border border-amber-200'} text-[11px] px-2.5 py-0.5 rounded-full font-bold">
+              ${isConfirmed ? '✓ CONFIRMED BY LANDLORD' : '⏳ PENDING REVIEW'}
+            </span>
+            <span class="text-slate-400 text-[11px]">${req.requestDate}</span>
+          </div>
+          <h4 class="text-sm font-bold text-navy-900">${req.propertyTitle}</h4>
+          <p class="text-slate-500">${req.roomType} · Landlord: ${req.landlordName}</p>
+          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-slate-700 italic">
+            "${req.message}"
+          </div>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+            <div>
+              <span class="text-slate-500">Contact:</span>
+              ${isConfirmed
+                ? `<b class="text-emerald-700 font-bold ml-1">${req.landlordPhone} (Unlocked)</b>`
+                : `<span class="text-slate-400 font-mono ml-1">🔒 +260 9X XXX XXXX (Reveals on Confirmation)</span>`
+              }
+            </div>
+            ${isConfirmed ? `<a href="tel:${req.landlordPhone}" class="bg-emerald-600 text-white px-2.5 py-1 rounded text-[11px] font-bold">Call Landlord</a>` : ''}
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function renderLandlordRequests() {
+      const list = document.getElementById('landlordIncomingList');
+      list.innerHTML = '';
+      studentRequests.forEach(req => {
+        const item = document.createElement('div');
+        item.className = 'border border-slate-200 rounded-xl p-4 bg-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs';
+        item.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-navy-900 text-sm">Thabo Musonda (UNZA Student)</span>
+              <span class="text-[11px] text-slate-400">· ${req.requestDate}</span>
+            </div>
+            <p class="text-slate-600 mt-0.5">Property: <b>${req.propertyTitle}</b> (${req.roomType})</p>
+            <p class="text-slate-500 italic mt-1">"${req.message}"</p>
+          </div>
+          <div class="flex items-center gap-2">
+            ${req.status === 'PENDING' ? `
+              <button onclick="confirmRequest('${req.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-bold text-xs transition">
+                Accept & Unlock Phone
+              </button>
+            ` : `
+              <span class="badge-verified px-3 py-1 rounded-lg font-bold">Confirmed ✓</span>
+            `}
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function confirmRequest(id) {
+      const req = studentRequests.find(r => r.id === id);
+      if (req) {
+        req.status = 'CONFIRMED';
+        alert('🎉 Booking confirmed! Student has been notified and contact details unlocked.');
+        renderStudentRequests();
+        renderLandlordRequests();
+      }
+    }
+
+    function switchTab(tab) {
+      const views = ['explore', 'student', 'landlord', 'admin', 'ai', 'download'];
+      views.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        const nav = document.getElementById('nav-' + v);
+        if (v === tab) {
+          if (el) el.classList.remove('hidden');
+          if (nav) {
+            nav.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition';
+          }
+        } else {
+          if (el) el.classList.add('hidden');
+          if (nav) {
+            nav.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition';
+          }
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openChatModal() {
+      switchTab('ai');
+    }
+
+    function sendAiMessage() {
+      const input = document.getElementById('aiInput');
+      const text = input.value.trim();
+      if (!text) return;
+      const box = document.getElementById('aiChatBox');
+
+      // User Message
+      const userDiv = document.createElement('div');
+      userDiv.className = 'bg-brand-600 text-white p-3 rounded-xl max-w-md ml-auto shadow-sm';
+      userDiv.innerHTML = `<p class="font-bold text-brand-100 mb-0.5">You:</p><p>${text}</p>`;
+      box.appendChild(userDiv);
+      input.value = '';
+
+      // AI Response generator
+      setTimeout(() => {
+        const aiDiv = document.createElement('div');
+        aiDiv.className = 'bg-white p-3 rounded-xl border border-slate-200 max-w-md shadow-sm';
+        let response = '';
+
+        if (text.toLowerCase().includes('unza') || text.toLowerCase().includes('great east')) {
+          response = 'Near **UNZA Great East Campus**, I recommend **Campus View Lodge** (K1,800/mo, 0.4km) or **Handsworth Park Villa** (K2,500/mo, 1.1km). Both feature solar inverters for continuous power during load shedding and reliable borehole water.';
+        } else if (text.toLowerCase().includes('cbu') || text.toLowerCase().includes('kitwe')) {
+          response = 'For **Copperbelt University (CBU)** in Kitwe, check out **Riverside Annex Lodge** on Jambo Drive (K1,200/mo for a double room, 0.5km from Gate 2). It has high security and constant water.';
+        } else if (text.toLowerCase().includes('apex') || text.toLowerCase().includes('medical')) {
+          response = 'For **Apex Medical University**, **Apex Medical Heights Hostel** (K2,200/mo, 0.6km) is ideal with silent solar inverters, quiet study spaces, and hot water geysers for intensive study schedules.';
+        } else if (text.toLowerCase().includes('cheap') || text.toLowerCase().includes('budget') || text.toLowerCase().includes('1200')) {
+          response = 'Great budget options include **Great North Student Haven (Mulungushi)** at K1,100/mo, **Riverside Annex (CBU)** at K1,200/mo, and **Evelyn Hone Central Annex** at K1,400/mo.';
+        } else {
+          response = `I found 6 verified accommodations near Zambian campuses matching your criteria. Every landlord has verified Zambian NRC documents and confirmed council rates. Feel free to use the filters in the <b>Find Housing</b> tab!`;
+        }
+
+        aiDiv.innerHTML = `<p class="font-bold text-brand-600 mb-1">BedSpace AI Advisor:</p><p class="text-slate-700 leading-relaxed">${response}</p>`;
+        box.appendChild(aiDiv);
+        box.scrollTop = box.scrollHeight;
+      }, 500);
+
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Initialize on load
+    renderProperties(propertiesData);
+    renderStudentRequests();
+    renderLandlordRequests();
+  </script>
+</body>
+</html>
