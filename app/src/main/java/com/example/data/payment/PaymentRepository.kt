@@ -56,18 +56,13 @@ object PaymentRepository {
         paymentType: PaymentType,
         provider: PaymentProvider,
         accountOrPhone: String,
+        customRefCode: String? = null,
         context: Context? = null
     ): PaymentTransaction {
         val now = System.currentTimeMillis()
         val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
         val dateFormatted = sdf.format(Date(now))
-        val prefix = when (provider) {
-            PaymentProvider.AIRTEL_MONEY -> "AIR"
-            PaymentProvider.MTN_MOMO -> "MTN"
-            PaymentProvider.ZAMTEL_KWACHA -> "ZAM"
-            PaymentProvider.VISA_MASTERCARD -> "CRD"
-        }
-        val refCode = "BSZM-LIP-${(100000..999999).random()}"
+        val refCode = customRefCode ?: "BSZM-LIP-${(100000..999999).random()}"
 
         val tx = PaymentTransaction(
             id = "tx_${UUID.randomUUID().toString().take(8)}",

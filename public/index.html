@@ -1183,7 +1183,16 @@
 
     // LIPILA PAYMENT GATEWAY INTEGRATION (ZAMBIA)
     const LIPILA_API_KEY = "lsk_019f41c4-269e-7529-ab2d-c3a3b099e76f";
-    const LIPILA_ENDPOINT = "https://api.lipila.dev/api/v1/collections/mobile-money";
+    const LIPILA_PROD_ENDPOINT = "https://blz.lipila.io/api/v1/collections/mobile-money";
+    const LIPILA_CARD_ENDPOINT = "https://blz.lipila.io/api/v1/collections/card";
+
+    function formatZambianPhone(raw) {
+      let digits = (raw || '').replace(/[^0-9]/g, '');
+      if (digits.startsWith('260') && digits.length === 12) return digits;
+      if (digits.startsWith('0') && digits.length === 10) return '260' + digits.substring(1);
+      if (digits.length === 9 && (digits.startsWith('9') || digits.startsWith('7'))) return '260' + digits;
+      return digits;
+    }
 
     function openPaymentModal(propId) {
       currentPayingProp = propertiesData.find(p => p.id === propId) || propertiesData[0];
@@ -1209,71 +1218,99 @@
     }
 
     async function executePayment() {
-      const phone = document.getElementById('payAccountNumber').value.trim();
+      const rawInput = document.getElementById('payAccountNumber').value.trim();
       const sim = document.getElementById('paymentPromptSim');
       const statusText = document.getElementById('paymentPromptStatusText');
       const btn = document.getElementById('paySubmitBtn');
 
-      if (!phone || phone.length < 8) {
-        alert('Please enter a valid mobile money number or card account.');
+      const isCard = selectedProvider.includes('Visa') || selectedProvider.includes('Card');
+      const formattedPhone = formatZambianPhone(rawInput);
+
+      if (!isCard && (!formattedPhone || formattedPhone.length !== 12 || !formattedPhone.startsWith('260'))) {
+        alert('Please enter a valid 10 or 12-digit Zambian mobile money number (e.g., 0971123344 or 260971123344).');
         return;
       }
 
       sim.classList.remove('hidden');
-      statusText.innerText = `Calling Lipila API (${selectedProvider})... Sending USSD push to ${phone}`;
-      btn.innerText = 'Connecting to Lipila Gateway...';
+      statusText.innerText = `Connecting to Lipila Gateway... Dispathing USSD prompt to ${formattedPhone || rawInput}`;
+      btn.innerText = 'Calling Lipila API...';
       btn.disabled = true;
 
-      const refId = 'BSZM-LIP-' + Math.floor(100000 + Math.random() * 900000);
-      const studentName = currentUser ? currentUser.name : 'Student User';
+      const refId = 'BSZM-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900);
+      const studentName = currentUser ? currentUser.name : 'Student Applicant';
       const studentEmail = currentUser ? currentUser.email : 'student@bedspace.zm';
+      const nameParts = studentName.trim().split(' ');
 
-      // Attempt live Lipila REST API call
+      const endpoint = isCard ? LIPILA_CARD_ENDPOINT : LIPILA_PROD_ENDPOINT;
+      const payload = {
+        amount: 200,
+        currency: 'ZMW',
+        phoneNumber: isCard ? formattedPhone : formattedPhone,
+        accountNumber: isCard ? rawInput.replace(/\s+/g, '') : formattedPhone,
+        narration: `BedSpaceZM Deposit - ${currentPayingProp ? currentPayingProp.title : 'Hostel'}`,
+        referenceId: refId,
+        firstName: nameParts[0] || 'Student',
+        lastName: nameParts.slice(1).join(' ') || 'User',
+        email: studentEmail
+      };
+
       try {
-        fetch(LIPILA_ENDPOINT, {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'x-api-key': LIPILA_API_KEY
           },
-          body: JSON.stringify({
-            amount: 200,
-            currency: 'ZMW',
-            accountNumber: phone.replace(/[^0-9+]/g, ''),
-            phoneNumber: phone.replace(/[^0-9+]/g, ''),
-            narration: `BedSpaceZM Deposit - ${currentPayingProp ? currentPayingProp.title : 'Hostel'}`,
-            referenceId: refId,
-            firstName: studentName.split(' ')[0] || 'Student',
-            lastName: studentName.split(' ')[1] || 'Guest',
-            email: studentEmail
-          })
-        }).catch(err => console.log('Lipila Gateway background status:', err));
-      } catch (e) {
-        console.log('Lipila request initiated');
-      }
+          body: JSON.stringify(payload)
+        });
 
-      setTimeout(() => {
-        statusText.innerText = 'Awaiting Mobile PIN authorization...';
-      }, 1000);
+        const resData = await response.json().catch(() => null);
 
-      setTimeout(() => {
-        statusText.innerText = 'Verifying Lipila settlement status (Successful)...';
-      }, 2000);
+        if (response.ok && resData) {
+          const identifier = resData.identifier || refId;
+          const status = resData.status || 'Pending';
+          const paymentType = resData.paymentType || selectedProvider;
 
-      setTimeout(() => {
+          statusText.innerHTML = `✅ <b>Lipila Prompt Dispatched!</b><br/>Check your phone (${formattedPhone}) to enter your ${paymentType} PIN.<br/><span class="text-[10px] text-amber-700">Lipila ID: ${identifier}</span>`;
+          btn.innerText = 'Authorize & Pay K200 via Lipila';
+          btn.disabled = false;
+
+          setTimeout(() => {
+            closePaymentModal();
+            alert(`🎉 Lipila Mobile Money Prompt Sent!\n\n` +
+                  `• Status: ${status}\n` +
+                  `• Provider: ${paymentType}\n` +
+                  `• Phone: ${formattedPhone}\n` +
+                  `• Lipila Identifier: ${identifier}\n` +
+                  `• Reference: ${refId}\n` +
+                  `• Amount: ZMW K200.00\n\n` +
+                  `Please check your phone and enter your Mobile Money PIN on the USSD pop-up to complete the transaction.`);
+          }, 1500);
+
+        } else {
+          // Parse Lipila error message
+          let errDetail = 'Payment collection failed.';
+          if (resData) {
+            if (resData.errors && resData.errors.generalErrors && resData.errors.generalErrors.length > 0) {
+              errDetail = resData.errors.generalErrors.join(', ');
+            } else if (resData.message) {
+              errDetail = resData.message;
+            }
+          }
+
+          sim.classList.add('hidden');
+          btn.innerText = 'Authorize & Pay K200 via Lipila';
+          btn.disabled = false;
+          alert(`❌ Lipila Gateway Error (${response.status}):\n\n${errDetail}\n\nPlease check that your mobile number is registered with ${selectedProvider} and try again.`);
+        }
+      } catch (err) {
+        console.error('Lipila Request Error:', err);
         sim.classList.add('hidden');
         btn.innerText = 'Authorize & Pay K200 via Lipila';
         btn.disabled = false;
-        closePaymentModal();
-
-        alert(`🎉 Payment Successful via Lipila Gateway!\n\n` +
-              `Status: SETTLED & ESCROW SECURED\n` +
-              `Provider: ${selectedProvider}\n` +
-              `Reference: ${refId}\n` +
-              `Amount: ZMW K200.00\n` +
-              `Lipila API Key: lsk_019f41...e76f\n\n` +
-              `Your reservation is locked in and landlord contacts are now verified.`);
-      }, 2800);
+        alert(`❌ Connection Error:\n\nUnable to reach Lipila Gateway (${err.message}). Please verify your internet connection.`);
+      }
     }
 
     // BOOKING DETAIL MODAL

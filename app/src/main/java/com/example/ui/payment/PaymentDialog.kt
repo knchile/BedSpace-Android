@@ -540,7 +540,7 @@ fun PaymentDialog(
                                         narration = "BedSpaceZM: ${property.title}"
                                     )
                                 } else {
-                                    processingStep = "Pushing ${selectedProvider.label} USSD prompt to $phoneOrAccount..."
+                                    processingStep = "Pushing ${selectedProvider.label} USSD prompt to ${LipilaPaymentClient.formatZambianPhone(phoneOrAccount)}..."
                                     LipilaPaymentClient.collectMobileMoney(
                                         amountKwacha = amountToPay,
                                         accountNumber = phoneOrAccount,
@@ -551,9 +551,14 @@ fun PaymentDialog(
                                     )
                                 }
 
+                                if (!lipilaResult.isSuccess) {
+                                    isProcessing = false
+                                    errorMessage = "Lipila Gateway Error: ${lipilaResult.message}"
+                                    return@launch
+                                }
+
+                                processingStep = "Lipila status: ${lipilaResult.status}. Awaiting mobile money confirmation..."
                                 delay(1200)
-                                processingStep = "Verifying Lipila settlement status (${lipilaResult.status})..."
-                                delay(800)
 
                                 val tx = PaymentRepository.processPayment(
                                     bookingId = bookingId,
@@ -562,7 +567,8 @@ fun PaymentDialog(
                                     amountKwacha = amountToPay,
                                     paymentType = paymentType,
                                     provider = selectedProvider,
-                                    accountOrPhone = phoneOrAccount,
+                                    accountOrPhone = LipilaPaymentClient.formatZambianPhone(phoneOrAccount),
+                                    customRefCode = lipilaResult.identifier ?: lipilaResult.transactionReference,
                                     context = context
                                 )
                                 isProcessing = false

@@ -15,25 +15,25 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Lipila Payment Gateway Client (Zambia)
- * Integrates directly with Lipila REST API for Mobile Money (Airtel, MTN, Zamtel) and Card Collections.
- * API Endpoint: https://api.lipila.dev / https://blz.lipila.io
+ * Live integration with Lipila REST API for Mobile Money (Airtel, MTN, Zamtel) and Card Collections.
+ * Live Production Endpoint: https://blz.lipila.io/api/v1/collections/mobile-money
  */
 object LipilaPaymentClient {
 
     private const val TAG = "LipilaPaymentClient"
     
-    // Default API Key provided for BedSpaceZM integration
+    // Live API Key provided for BedSpaceZM merchant integration
     private const val DEFAULT_API_KEY = "lsk_019f41c4-269e-7529-ab2d-c3a3b099e76f"
     
-    // Base endpoints
-    private const val SANDBOX_BASE_URL = "https://api.lipila.dev"
+    // Lipila Production & Sandbox URLs
     private const val PROD_BASE_URL = "https://blz.lipila.io"
+    private const val SANDBOX_BASE_URL = "https://api.lipila.dev"
 
     private val httpClient by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(25, TimeUnit.SECONDS)
+            .readTimeout(25, TimeUnit.SECONDS)
+            .writeTimeout(25, TimeUnit.SECONDS)
             .build()
     }
 
@@ -46,9 +46,23 @@ object LipilaPaymentClient {
         }
     }
 
+    /**
+     * Formats raw user input into standard Zambian MSISDN: 2609XXXXXXXX / 2607XXXXXXXX
+     */
+    fun formatZambianPhone(raw: String): String {
+        val digits = raw.replace("[^0-9]".toRegex(), "")
+        return when {
+            digits.startsWith("260") && digits.length == 12 -> digits
+            digits.startsWith("0") && digits.length == 10 -> "260" + digits.substring(1)
+            digits.length == 9 && (digits.startsWith("9") || digits.startsWith("7")) -> "260$digits"
+            else -> digits
+        }
+    }
+
     data class LipilaResponse(
         val isSuccess: Boolean,
         val transactionReference: String,
+        val identifier: String? = null,
         val status: String,
         val message: String,
         val rawResponse: String? = null
@@ -65,22 +79,21 @@ object LipilaPaymentClient {
         customerName: String,
         customerEmail: String,
         narration: String,
-        referenceId: String = "BSZM-LIP-${(100000..999999).random()}"
+        referenceId: String = "BSZM-${System.currentTimeMillis()}-${(100..999).random()}"
     ): LipilaResponse = withContext(Dispatchers.IO) {
         val apiKey = getApiKey()
-        val names = customerName.trim().split(" ", limit = 2)
-        val firstName = names.getOrElse(0) { "Student" }
-        val lastName = names.getOrElse(1) { "Applicant" }
+        val formattedPhone = formatZambianPhone(accountNumber)
 
-        // Sanitize phone number (strip whitespace and formatting)
-        val sanitizedPhone = accountNumber.replace("[^0-9+]".toRegex(), "")
+        val names = customerName.trim().split(" ", limit = 2)
+        val firstName = names.getOrElse(0) { "Student" }.ifBlank { "Student" }
+        val lastName = names.getOrElse(1) { "Applicant" }.ifBlank { "User" }
 
         val jsonPayload = JSONObject().apply {
             put("amount", amountKwacha)
             put("currency", "ZMW")
-            put("accountNumber", sanitizedPhone)
-            put("phoneNumber", sanitizedPhone)
-            put("narration", narration)
+            put("phoneNumber", formattedPhone)
+            put("accountNumber", formattedPhone)
+            put("narration", narration.take(100))
             put("referenceId", referenceId)
             put("firstName", firstName)
             put("lastName", lastName)
@@ -89,14 +102,18 @@ object LipilaPaymentClient {
 
         val requestBody = jsonPayload.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
 
-        // Try primary sandbox/prod endpoints
+        // Priority to production endpoint (where merchant live key is registered)
         val endpoints = listOf(
-            "$SANDBOX_BASE_URL/api/v1/collections/mobile-money",
-            "$PROD_BASE_URL/api/v1/collections/mobile-money"
+            "$PROD_BASE_URL/api/v1/collections/mobile-money",
+            "$SANDBOX_BASE_URL/api/v1/collections/mobile-money"
         )
+
+        var lastErrorMessage = "Unable to connect to Lipila Gateway"
 
         for (endpoint in endpoints) {
             try {
+                Log.d(TAG, "Initiating Lipila collection on $endpoint with phone: $formattedPhone, ref: $referenceId")
+
                 val request = Request.Builder()
                     .url(endpoint)
                     .addHeader("x-api-key", apiKey)
@@ -111,30 +128,47 @@ object LipilaPaymentClient {
 
                 if (response.isSuccessful || response.code in 200..202) {
                     val resJson = try { JSONObject(responseBodyStr) } catch (_: Exception) { null }
-                    val statusStr = resJson?.optString("status", "Successful") ?: "Successful"
-                    val msg = resJson?.optString("message", "Payment initiated via Lipila") ?: "Payment initiated"
-                    val txId = resJson?.optString("transactionId", referenceId) ?: referenceId
+                    val statusStr = resJson?.optString("status", "Pending") ?: "Pending"
+                    val identifier = resJson?.optString("identifier", "")
+                    val txId = resJson?.optString("referenceId", referenceId) ?: referenceId
+                    val paymentType = resJson?.optString("paymentType", provider.label) ?: provider.label
 
                     return@withContext LipilaResponse(
                         isSuccess = true,
                         transactionReference = txId,
+                        identifier = identifier,
                         status = statusStr,
-                        message = msg,
+                        message = "USSD Prompt sent to $formattedPhone ($paymentType). Please approve on your handset.",
                         rawResponse = responseBodyStr
                     )
+                } else {
+                    // Extract error detail from response
+                    val errJson = try { JSONObject(responseBodyStr) } catch (_: Exception) { null }
+                    val errMessage = errJson?.optString("message", "")
+                    val errorsObj = errJson?.optJSONObject("errors")
+                    val generalErrors = errorsObj?.optJSONArray("generalErrors")?.let { arr ->
+                        (0 until arr.length()).map { arr.getString(it) }.joinToString("; ")
+                    }
+
+                    lastErrorMessage = when {
+                        !generalErrors.isNullOrBlank() -> generalErrors
+                        !errMessage.isNullOrBlank() -> errMessage
+                        else -> "HTTP ${response.code}: $responseBodyStr"
+                    }
+                    Log.w(TAG, "Lipila error response: $lastErrorMessage")
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Lipila endpoint $endpoint call error: ${e.message}")
+                Log.w(TAG, "Lipila endpoint $endpoint call failed: ${e.message}")
+                lastErrorMessage = e.message ?: "Network timeout connecting to Lipila"
             }
         }
 
-        // Graceful fallback for demo/sandbox offline resilience
-        Log.i(TAG, "Lipila live response recorded with reference $referenceId")
+        // Return real failure so user is informed and not deceived by a fake confirmation
         return@withContext LipilaResponse(
-            isSuccess = true,
+            isSuccess = false,
             transactionReference = referenceId,
-            status = "Completed",
-            message = "Processed via Lipila Zambia Gateway (Key: ${apiKey.take(8)}...)"
+            status = "Failed",
+            message = lastErrorMessage
         )
     }
 
@@ -147,18 +181,18 @@ object LipilaPaymentClient {
         customerName: String,
         customerEmail: String,
         narration: String,
-        referenceId: String = "BSZM-LIP-CRD-${(100000..999999).random()}"
+        referenceId: String = "BSZM-CRD-${System.currentTimeMillis()}-${(100..999).random()}"
     ): LipilaResponse = withContext(Dispatchers.IO) {
         val apiKey = getApiKey()
         val names = customerName.trim().split(" ", limit = 2)
-        val firstName = names.getOrElse(0) { "Student" }
-        val lastName = names.getOrElse(1) { "Applicant" }
+        val firstName = names.getOrElse(0) { "Student" }.ifBlank { "Student" }
+        val lastName = names.getOrElse(1) { "Applicant" }.ifBlank { "User" }
 
         val jsonPayload = JSONObject().apply {
             put("amount", amountKwacha)
             put("currency", "ZMW")
             put("accountNumber", cardNumber.replace(" ", ""))
-            put("narration", narration)
+            put("narration", narration.take(100))
             put("referenceId", referenceId)
             put("firstName", firstName)
             put("lastName", lastName)
@@ -169,7 +203,7 @@ object LipilaPaymentClient {
 
         try {
             val request = Request.Builder()
-                .url("$SANDBOX_BASE_URL/api/v1/collections/card")
+                .url("$PROD_BASE_URL/api/v1/collections/card")
                 .addHeader("x-api-key", apiKey)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")
@@ -181,23 +215,34 @@ object LipilaPaymentClient {
 
             if (response.isSuccessful || response.code in 200..202) {
                 val resJson = try { JSONObject(responseBodyStr) } catch (_: Exception) { null }
+                val identifier = resJson?.optString("identifier", "")
+                val redirectUrl = resJson?.optString("cardRedirectionUrl", "")
+
                 return@withContext LipilaResponse(
                     isSuccess = true,
-                    transactionReference = resJson?.optString("transactionId", referenceId) ?: referenceId,
+                    transactionReference = resJson?.optString("referenceId", referenceId) ?: referenceId,
+                    identifier = identifier,
                     status = "Successful",
-                    message = resJson?.optString("message", "Card payment approved") ?: "Card payment approved",
+                    message = "Card payment processed via Lipila Gateway",
                     rawResponse = responseBodyStr
+                )
+            } else {
+                return@withContext LipilaResponse(
+                    isSuccess = false,
+                    transactionReference = referenceId,
+                    status = "Failed",
+                    message = "Card payment failed: $responseBodyStr"
                 )
             }
         } catch (e: Exception) {
             Log.w(TAG, "Lipila card collection error: ${e.message}")
+            return@withContext LipilaResponse(
+                isSuccess = false,
+                transactionReference = referenceId,
+                status = "Failed",
+                message = e.message ?: "Card gateway network error"
+            )
         }
-
-        return@withContext LipilaResponse(
-            isSuccess = true,
-            transactionReference = referenceId,
-            status = "Completed",
-            message = "Card payment processed via Lipila Gateway (Key: ${apiKey.take(8)}...)"
-        )
     }
 }
+
