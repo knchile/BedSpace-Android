@@ -308,7 +308,71 @@ fun AuthDialog(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Quick Sign-In Presets:",
+                        text = "Or continue with:",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate500)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Social Sign In Buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                val res = AuthRepository.socialSignUpOrLogin(
+                                    provider = "Google",
+                                    name = "Google Student User",
+                                    email = "student.google@gmail.com",
+                                    role = UserRole.STUDENT
+                                )
+                                res.onSuccess { onAuthSuccess(it) }.onFailure { loginError = it.message }
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Google", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Navy900)
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                val res = AuthRepository.socialSignUpOrLogin(
+                                    provider = "Apple",
+                                    name = "Apple Student User",
+                                    email = "student.apple@icloud.com",
+                                    role = UserRole.STUDENT
+                                )
+                                res.onSuccess { onAuthSuccess(it) }.onFailure { loginError = it.message }
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Apple", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Navy900)
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                val res = AuthRepository.socialSignUpOrLogin(
+                                    provider = "Campus SSO",
+                                    name = "UNZA Student",
+                                    email = "student@unza.zm",
+                                    role = UserRole.STUDENT,
+                                    institution = "University of Zambia (UNZA)"
+                                )
+                                res.onSuccess { onAuthSuccess(it) }.onFailure { loginError = it.message }
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1.2f)
+                        ) {
+                            Text("Campus SSO", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Blue600)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Text(
+                        text = "Quick Demo Profiles:",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate500)
                     )
 
@@ -538,6 +602,75 @@ fun AuthDialog(
                             .testTag("auth_signup_submit_btn")
                     ) {
                         Text("Create Account", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = White))
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = Slate200)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Or 1-Tap Sign Up with:",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Slate500)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                val res = AuthRepository.socialSignUpOrLogin(
+                                    provider = "Google",
+                                    name = if (signupName.isNotBlank()) signupName else "Google User",
+                                    email = if (signupEmail.isNotBlank()) signupEmail else "new.user@gmail.com",
+                                    role = signupRole,
+                                    institution = if (signupRole == UserRole.STUDENT) signupInstitution else null
+                                )
+                                res.onSuccess { onAuthSuccess(it) }.onFailure { signupError = it.message }
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Google", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Navy900)
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                val res = AuthRepository.socialSignUpOrLogin(
+                                    provider = "Apple",
+                                    name = if (signupName.isNotBlank()) signupName else "Apple User",
+                                    email = if (signupEmail.isNotBlank()) signupEmail else "new.user@icloud.com",
+                                    role = signupRole,
+                                    institution = if (signupRole == UserRole.STUDENT) signupInstitution else null
+                                )
+                                res.onSuccess { onAuthSuccess(it) }.onFailure { signupError = it.message }
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Apple", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Navy900)
+                        }
+
+                        if (signupRole == UserRole.STUDENT) {
+                            OutlinedButton(
+                                onClick = {
+                                    val res = AuthRepository.socialSignUpOrLogin(
+                                        provider = "Campus SSO",
+                                        name = if (signupName.isNotBlank()) signupName else "Student User",
+                                        email = if (signupEmail.isNotBlank()) signupEmail else "student@edu.zm",
+                                        role = UserRole.STUDENT,
+                                        institution = signupInstitution
+                                    )
+                                    res.onSuccess { onAuthSuccess(it) }.onFailure { signupError = it.message }
+                                },
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.weight(1.2f)
+                            ) {
+                                Text("Campus SSO", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Blue600)
+                            }
+                        }
                     }
                 }
             }

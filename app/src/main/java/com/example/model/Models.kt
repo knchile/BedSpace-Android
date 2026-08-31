@@ -117,17 +117,26 @@ enum class UserRole(val label: String) {
     ADMIN("Administrator")
 }
 
+enum class UserStatus(val label: String) {
+    ACTIVE("Active"),
+    BLOCKED("Blocked"),
+    BANNED("Banned")
+}
+
 data class User(
     val id: String,
     val name: String,
     val email: String,
-    val password: String,
-    val phone: String,
+    val password: String = "",
+    val phone: String = "",
     val role: UserRole,
     val institution: String? = null,
     val studentId: String? = null,
     val nrcNumber: String? = null,
-    val isVerified: Boolean = false
+    val isVerified: Boolean = false,
+    val status: UserStatus = UserStatus.ACTIVE,
+    val blockReason: String? = null,
+    val socialProvider: String? = null
 )
 
 enum class PaymentType(val label: String) {

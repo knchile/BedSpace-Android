@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BedSpaceZM · Verified Student Accommodation in Zambia</title>
-  <meta name="description" content="Find safe, verified student boarding houses near UNZA, CBU, Mulungushi, Evelyn Hone, and Apex Medical University. Protected contacts, scam-free guarantee, and AI assistance." />
+  <meta name="description" content="Find safe, verified student boarding houses near UNZA, CBU, Mulungushi, Evelyn Hone, and Apex Medical University. Protected contacts, scam-free guarantee, and integrated mobile money payments." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -43,6 +43,8 @@
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .badge-verified { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
     .badge-institution { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+    .badge-blocked { background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; }
+    .badge-banned { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
     .modal-backdrop { background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); }
   </style>
 </head>
@@ -53,13 +55,13 @@
     <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
       <span class="flex items-center gap-2">
         <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>100% Anti-Scam Protection: Landlord NRCs & Council Rates Verified</span>
+        <span>100% Anti-Scam Protection: Landlord NRCs Verified · Secure Mobile Money Escrow</span>
       </span>
       <div class="flex items-center gap-4">
         <span class="hidden sm:inline text-slate-400">Available on Web & Android Native</span>
-        <button onclick="switchTab('download')" class="bg-brand-600 hover:bg-brand-500 text-white px-2.5 py-1 rounded font-semibold text-[11px] transition">
+        <a href="/bedspace-zm.apk" download="BedSpaceZM.apk" class="bg-brand-600 hover:bg-brand-500 text-white px-2.5 py-1 rounded font-semibold text-[11px] transition inline-flex items-center gap-1">
           📱 Android APK
-        </button>
+        </a>
       </div>
     </div>
   </div>
@@ -80,36 +82,20 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
-      <nav class="hidden md:flex items-center gap-1">
-        <button id="nav-explore" onclick="switchTab('explore')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition">
-          Find Housing
-        </button>
-        <button id="nav-student" onclick="switchTab('student')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">
-          Student Portal
-        </button>
-        <button id="nav-landlord" onclick="switchTab('landlord')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">
-          Landlord KYC
-        </button>
-        <button id="nav-admin" onclick="switchTab('admin')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">
-          Admin Console
-        </button>
-        <button id="nav-ai" onclick="switchTab('ai')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-brand-600"></span>
-          AI Advisor
-        </button>
+      <!-- Role-Isolated Dynamic Navigation Tabs -->
+      <nav id="dynamicNav" class="hidden md:flex items-center gap-1">
+        <!-- Rendered dynamically based on currentUser.role -->
       </nav>
 
-      <!-- Action Button -->
+      <!-- User Profile / Auth Area -->
       <div class="flex items-center gap-2">
         <button onclick="openChatModal()" class="hidden sm:flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-navy-900 px-3 py-2 rounded-lg text-xs font-semibold transition">
           <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-          Ask BedSpace AI
+          Ask AI
         </button>
-        <a href="/bedspace-zm.apk" download="BedSpaceZM.apk" class="bg-navy-800 hover:bg-navy-900 text-white px-4 py-2 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-          Download APK
-        </a>
+        <div id="userAuthContainer">
+          <!-- Populated by JS: either Sign In button or User Pill -->
+        </div>
       </div>
     </div>
   </header>
@@ -117,7 +103,7 @@
   <!-- MAIN CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-    <!-- 1. EXPLORE & SEARCH VIEW -->
+    <!-- 1. LANDING / EXPLORE VIEW (DEFAULT FOR ALL) -->
     <section id="view-explore" class="space-y-6">
       <!-- HERO BANNER -->
       <div class="bg-gradient-to-r from-navy-900 via-slate-900 to-brand-700 rounded-2xl p-6 sm:p-10 text-white shadow-sm relative overflow-hidden">
@@ -130,7 +116,7 @@
             Find Safe Student Housing. Zero Scammers.
           </h1>
           <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
-            Directly connect with vetted Zambian landlords near UNZA, CBU, Mulungushi, Evelyn Hone & Apex. Phone numbers are protected until booking inquiries are approved.
+            Directly connect with vetted Zambian landlords near UNZA, CBU, Mulungushi, Evelyn Hone & Apex. Pay deposits safely via Airtel, MTN, Zamtel or Card with escrow protection.
           </p>
 
           <!-- Search Filter Box -->
@@ -175,19 +161,19 @@
           <p class="text-[11px] text-emerald-600 font-semibold mt-0.5">✓ 100% In-Person Vetted</p>
         </div>
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p class="text-xs text-slate-500 font-medium">Supported Campuses</p>
-          <p class="text-xl font-extrabold text-navy-900 mt-1">5 Major Universities</p>
-          <p class="text-[11px] text-brand-600 font-semibold mt-0.5">Lusaka, Kitwe & Kabwe</p>
+          <p class="text-xs text-slate-500 font-medium">Payment Gateway</p>
+          <p class="text-xl font-extrabold text-navy-900 mt-1">Airtel · MTN · Zamtel</p>
+          <p class="text-[11px] text-brand-600 font-semibold mt-0.5">Instant Mobile Money Checkout</p>
         </div>
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p class="text-xs text-slate-500 font-medium">Scam Prevention</p>
-          <p class="text-xl font-extrabold text-emerald-600 mt-1">NRC & Deed Verification</p>
-          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Protected landlord contacts</p>
+          <p class="text-xs text-slate-500 font-medium">Anti-Scam Protection</p>
+          <p class="text-xl font-extrabold text-emerald-600 mt-1">NRC & Title Deed Checked</p>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Protected landlord phone numbers</p>
         </div>
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p class="text-xs text-slate-500 font-medium">Database Layer</p>
-          <p class="text-xl font-extrabold text-navy-900 mt-1">Neon Postgres</p>
-          <p class="text-[11px] text-brand-600 font-semibold mt-0.5">Real-time sync enabled</p>
+          <p class="text-xs text-slate-500 font-medium">Social Sign-Up</p>
+          <p class="text-xl font-extrabold text-navy-900 mt-1">Google · Apple · SSO</p>
+          <p class="text-[11px] text-brand-600 font-semibold mt-0.5">Instant 1-Tap Registration</p>
         </div>
       </div>
 
@@ -201,28 +187,50 @@
           <!-- Populated by JavaScript -->
         </div>
       </div>
+
+      <!-- TRUST & ANTI-SCAM ACCORDION -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <h3 class="text-lg font-bold text-navy-900 mb-2">How BedSpaceZM Protects Zambian Students</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-xs">
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h4 class="font-bold text-navy-900 text-sm mb-1">1. NRC & Rates Verification</h4>
+            <p class="text-slate-600 leading-relaxed">No landlord can list without submitting a certified copy of their Zambian National Registration Card (NRC) and City Council rates receipt.</p>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h4 class="font-bold text-navy-900 text-sm mb-1">2. Protected Phone Numbers</h4>
+            <p class="text-slate-600 leading-relaxed">Landlord direct WhatsApp and mobile contacts are protected until your booking inquiry is submitted and verified.</p>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h4 class="font-bold text-navy-900 text-sm mb-1">3. Mobile Money Escrow</h4>
+            <p class="text-slate-600 leading-relaxed">Pay deposits safely with Airtel Money (*778#), MTN MoMo (*115#), or Zamtel (*344#). Funds are held until room inspection.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- 2. STUDENT PORTAL VIEW -->
+    <!-- 2. STUDENT PORTAL VIEW (STUDENT & ADMIN ONLY) -->
     <section id="view-student" class="hidden space-y-6">
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-100">
           <div>
-            <span class="badge-institution text-xs px-2 py-0.5 rounded-full font-bold">UNZA STUDENT PORTAL</span>
-            <h2 class="text-2xl font-extrabold text-navy-900 mt-1">Student Booking & Inquiry Dashboard</h2>
-            <p class="text-sm text-slate-500">Track your requests, verify prices, and access landlord contact details once confirmed.</p>
+            <span class="badge-institution text-xs px-2 py-0.5 rounded-full font-bold">STUDENT DASHBOARD</span>
+            <h2 class="text-2xl font-extrabold text-navy-900 mt-1">My Bookings & Payments</h2>
+            <p class="text-sm text-slate-500">Track your room inquiries, unlock landlord direct numbers, and pay reservation fees.</p>
           </div>
           <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">TM</div>
+            <div id="studentAvatar" class="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">TM</div>
             <div>
-              <p class="text-xs font-bold text-navy-900">Thabo Musonda</p>
-              <p class="text-[11px] text-slate-500">thabo.unza@gmail.com · +260 97 112 3344</p>
+              <p id="studentDisplayName" class="text-xs font-bold text-navy-900">Thabo Musonda</p>
+              <p id="studentDisplayEmail" class="text-[11px] text-slate-500">thabo@unza.zm · UNZA</p>
             </div>
           </div>
         </div>
 
         <div class="mt-6">
-          <h3 class="text-base font-bold text-navy-900 mb-3">Your Sent Inquiries & Booking Status</h3>
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-base font-bold text-navy-900">Your Booking Inquiries</h3>
+            <button onclick="switchTab('explore')" class="text-xs text-brand-600 font-bold hover:underline">+ Find Another Room</button>
+          </div>
           <div id="studentRequestsList" class="space-y-4">
             <!-- Populated by JS -->
           </div>
@@ -230,7 +238,7 @@
       </div>
     </section>
 
-    <!-- 3. LANDLORD PORTAL VIEW -->
+    <!-- 3. LANDLORD PORTAL VIEW (LANDLORD & ADMIN ONLY) -->
     <section id="view-landlord" class="hidden space-y-6">
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-100">
@@ -239,8 +247,8 @@
               <span class="badge-verified text-xs px-2 py-0.5 rounded-full font-bold">VERIFIED LANDLORD</span>
               <span class="text-xs text-emerald-600 font-bold">● KYC Compliant</span>
             </div>
-            <h2 class="text-2xl font-extrabold text-navy-900 mt-1">Mr. Mwansa Tembo's Landlord Portal</h2>
-            <p class="text-sm text-slate-500">Manage boarding houses, approve student requests, and maintain verified status.</p>
+            <h2 class="text-2xl font-extrabold text-navy-900 mt-1" id="landlordHeading">Landlord Management Portal</h2>
+            <p class="text-sm text-slate-500">Manage boarding houses, approve student requests, and request Mobile Money payouts.</p>
           </div>
           <button onclick="openAddPropertyModal()" class="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
             <span>+</span> Add Boarding House
@@ -271,35 +279,69 @@
       </div>
     </section>
 
-    <!-- 4. ADMIN CONSOLE VIEW -->
+    <!-- 4. ADMIN SUPER CONSOLE VIEW (ADMIN ONLY) -->
     <section id="view-admin" class="hidden space-y-6">
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div class="pb-6 border-b border-slate-100">
-          <span class="bg-slate-900 text-white text-[11px] px-2.5 py-0.5 rounded-full font-bold">BEDSPACE TRUST & SAFETY CONSOLE</span>
-          <h2 class="text-2xl font-extrabold text-navy-900 mt-1">Admin Verification & Anti-Scam Queue</h2>
-          <p class="text-sm text-slate-500">Moderating Zambian landlord submissions, verifying NRCs, and clearing physical inspection tickets.</p>
+        <div class="pb-6 border-b border-slate-100 flex justify-between items-start">
+          <div>
+            <span class="bg-slate-900 text-white text-[11px] px-2.5 py-0.5 rounded-full font-bold">SUPER ADMINISTRATOR CONSOLE</span>
+            <h2 class="text-2xl font-extrabold text-navy-900 mt-1">Platform Moderation & User Management</h2>
+            <p class="text-sm text-slate-500">Super admin control over user bans, blocking, listing approvals, and escrow transactions.</p>
+          </div>
+          <span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-bold">Admin: knchile@gmail.com</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
           <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-            <p class="text-xs font-semibold text-slate-500">Pending KYC Documents</p>
-            <p class="text-2xl font-extrabold text-navy-900 mt-1">3 Under Review</p>
-            <p class="text-xs text-amber-600 font-medium mt-1">Requires NRC Cross-Match</p>
+            <p class="text-xs font-semibold text-slate-500">Registered Users</p>
+            <p class="text-2xl font-extrabold text-navy-900 mt-1" id="adminUserCount">3 Users</p>
+            <p class="text-xs text-brand-600 font-medium mt-1">Role Isolation Active</p>
           </div>
           <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-            <p class="text-xs font-semibold text-slate-500">Scam Prevention Score</p>
-            <p class="text-2xl font-extrabold text-emerald-600 mt-1">99.8% Safety</p>
-            <p class="text-xs text-slate-500 font-medium mt-1">0 unvetted contacts shared</p>
+            <p class="text-xs font-semibold text-slate-500">Escrow Total Volume</p>
+            <p class="text-2xl font-extrabold text-emerald-600 mt-1">K7,200 ZMW</p>
+            <p class="text-xs text-slate-500 font-medium mt-1">Airtel / MTN / Zamtel</p>
           </div>
           <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-            <p class="text-xs font-semibold text-slate-500">Postgres Database</p>
-            <p class="text-2xl font-extrabold text-brand-600 mt-1">Connected</p>
-            <p class="text-xs text-slate-500 font-medium mt-1">Neon Serverless Pool active</p>
+            <p class="text-xs font-semibold text-slate-500">Pending KYC</p>
+            <p class="text-2xl font-extrabold text-amber-600 mt-1">1 Under Review</p>
+            <p class="text-xs text-slate-500 font-medium mt-1">NRC Cross-Verification</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+            <p class="text-xs font-semibold text-slate-500">Active Listings</p>
+            <p class="text-2xl font-extrabold text-navy-900 mt-1">8 Properties</p>
+            <p class="text-xs text-emerald-600 font-medium mt-1">100% Anti-Scam</p>
           </div>
         </div>
 
-        <div class="mt-6">
-          <h3 class="text-base font-bold text-navy-900 mb-3">Verification Review Queue</h3>
+        <!-- USER MODERATION TABLE (BAN / BLOCK / UNBLOCK) -->
+        <div class="mt-8">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-base font-bold text-navy-900">User Registry & Account Moderation (Ban / Block / Unblock)</h3>
+            <span class="text-xs text-slate-500">Admins can restrict bad actors instantly</span>
+          </div>
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">User Name</th>
+                  <th class="p-3">Role</th>
+                  <th class="p-3">Email & Contact</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-right">Moderation Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminUserTableBody" class="divide-y divide-slate-200 bg-white">
+                <!-- Populated dynamically by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- KYC Approvals -->
+        <div class="mt-8">
+          <h3 class="text-base font-bold text-navy-900 mb-3">Landlord NRC & Document Review Queue</h3>
           <div class="border border-slate-200 rounded-xl overflow-hidden">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -311,7 +353,7 @@
                   <th class="p-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-200">
+              <tbody class="divide-y divide-slate-200 bg-white">
                 <tr>
                   <td class="p-3 font-semibold text-navy-900">Mr. Mwansa Tembo</td>
                   <td class="p-3">Zambian NRC + Title Deed</td>
@@ -324,7 +366,9 @@
                   <td class="p-3">NRC Front & Back</td>
                   <td class="p-3">Riverside Annex (CBU)</td>
                   <td class="p-3"><span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold">IN REVIEW</span></td>
-                  <td class="p-3 text-right"><button class="bg-brand-600 text-white px-2 py-1 rounded text-[11px] font-bold">Inspect NRC</button></td>
+                  <td class="p-3 text-right">
+                    <button onclick="approveLandlordKyc()" class="bg-brand-600 text-white px-2.5 py-1 rounded text-[11px] font-bold">Approve KYC</button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -352,210 +396,468 @@
         </div>
 
         <div class="flex gap-2">
-          <input id="aiInput" onkeypress="if(event.key==='Enter') sendAiMessage()" type="text" placeholder="e.g. Find me a single room near UNZA under K1,800 with backup power" class="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-brand-600 bg-slate-50" />
-          <button onclick="sendAiMessage()" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition">Send</button>
+          <input id="aiInput" type="text" placeholder="Ask e.g. 'Show me rooms near UNZA with solar backup'..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-xs outline-none bg-slate-50 focus:border-brand-600" onkeydown="if(event.key==='Enter') sendAiMessage()" />
+          <button onclick="sendAiMessage()" class="bg-brand-600 hover:bg-brand-500 text-white font-bold px-5 py-3 rounded-xl text-xs transition">
+            Send
+          </button>
         </div>
       </div>
     </section>
 
-    <!-- 6. DOWNLOAD ANDROID APK VIEW -->
-    <section id="view-download" class="hidden space-y-6">
-      <div class="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto text-center">
-        <div class="w-16 h-16 bg-brand-50 border border-brand-200 text-brand-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 font-black">
-          📱
-        </div>
-        <h2 class="text-2xl sm:text-3xl font-extrabold text-navy-900 mb-2">Download BedSpaceZM for Android</h2>
-        <p class="text-slate-600 text-sm max-w-xl mx-auto mb-6">
-          Experience the full native Android app with real push notifications, Material 3 design, protected landlord contacts, and offline-first Room database.
-        </p>
+    <!-- 6. FAQS & HELP VIEW -->
+    <section id="view-faqs" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-4">
+        <h2 class="text-2xl font-extrabold text-navy-900">Frequently Asked Questions</h2>
+        <p class="text-xs text-slate-500">Everything you need to know about student housing verification and payments in Zambia.</p>
 
-        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-left space-y-4 mb-6">
-          <h3 class="text-sm font-bold text-navy-900">How to install & export your APK:</h3>
-          <ol class="text-xs text-slate-700 space-y-2 list-decimal list-inside">
-            <li><b>AI Studio Direct Export:</b> In Google AI Studio, click the project settings / gear icon in the top bar and select <b>Download APK</b> or <b>Export ZIP</b>.</li>
-            <li><b>Via Android Studio:</b> Clone the GitHub repository, open in Android Studio, and run <code class="bg-slate-200 px-1.5 py-0.5 rounded font-mono">./gradlew assembleDebug</code>.</li>
-            <li><b>Install on Phone:</b> Transfer the generated <code class="bg-slate-200 px-1.5 py-0.5 rounded font-mono">app-debug.apk</code> to your Android device and tap to install.</li>
-          </ol>
-        </div>
-
-        <div class="flex flex-col sm:flex-row justify-center gap-3">
-          <a href="/bedspace-zm.apk" download="BedSpaceZM.apk" class="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition inline-flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            <span>Download BedSpaceZM APK (23.5 MB)</span>
-          </a>
-          <button onclick="switchTab('explore')" class="bg-slate-100 hover:bg-slate-200 text-navy-900 px-6 py-3.5 rounded-xl font-bold text-sm transition">
-            Explore Web Version
-          </button>
+        <div class="space-y-3 pt-2 text-xs">
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h4 class="font-bold text-navy-900 text-sm mb-1">How does BedSpaceZM prevent boarding house scams?</h4>
+            <p class="text-slate-600 leading-relaxed">We require all landlords to upload their valid Zambian NRC and physical municipal rates receipt. Contacts are protected until availability is confirmed.</p>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h4 class="font-bold text-navy-900 text-sm mb-1">What payment methods are supported for reservations?</h4>
+            <p class="text-slate-600 leading-relaxed">You can pay using Airtel Money (*778#), MTN Mobile Money (*115#), Zamtel Kwacha (*344#), or Visa/Mastercard debit cards.</p>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h4 class="font-bold text-navy-900 text-sm mb-1">What happens if an account is blocked or banned by the Admin?</h4>
+            <p class="text-slate-600 leading-relaxed">The administrator has strict oversight to block fraudulent accounts or violators. Banned users are instantly kicked from active sessions.</p>
+          </div>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- PROPERTY DETAIL / INQUIRY MODAL -->
-  <div id="bookingModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
-      <button onclick="closeBookingModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+  <!-- MODALS -->
+
+  <!-- AUTHENTICATION DIALOG (SIGN IN / REGISTER / SOCIAL SIGNUP) -->
+  <div id="authModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-navy-900 flex items-center justify-center text-white font-bold text-sm">B</div>
+          <h3 class="font-extrabold text-navy-900 text-base">BedSpaceZM Account</h3>
+        </div>
+        <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+      </div>
+
+      <div id="authAlert" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+
+      <!-- Tabs: Sign In / Create Account -->
+      <div class="flex border-b border-slate-200 text-xs font-bold">
+        <button id="authTabSignIn" onclick="setAuthTab('signin')" class="flex-1 py-2.5 border-b-2 border-brand-600 text-brand-600 text-center">Sign In</button>
+        <button id="authTabSignUp" onclick="setAuthTab('signup')" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-500 text-center hover:text-navy-900">Create Account</button>
+      </div>
+
+      <!-- 1. SIGN IN FORM -->
+      <div id="authSignInForm" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+          <input id="loginEmail" type="email" placeholder="e.g. knchile@gmail.com" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50 focus:border-brand-600" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+          <input id="loginPassword" type="password" placeholder="••••••••" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50 focus:border-brand-600" />
+        </div>
+        <button onclick="handleLogin()" class="w-full bg-navy-800 hover:bg-navy-900 text-white font-bold py-3 rounded-xl text-xs transition">
+          Sign In
+        </button>
+
+        <!-- Social Sign In Options -->
+        <div class="pt-2 border-t border-slate-200">
+          <p class="text-[11px] font-bold text-slate-500 mb-2">Or continue with:</p>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <button onclick="handleSocialAuth('Google', 'STUDENT')" class="border border-slate-200 hover:bg-slate-50 p-2 rounded-lg font-bold text-navy-900 flex items-center justify-center gap-1">
+              Google
+            </button>
+            <button onclick="handleSocialAuth('Apple', 'STUDENT')" class="border border-slate-200 hover:bg-slate-50 p-2 rounded-lg font-bold text-navy-900 flex items-center justify-center gap-1">
+              Apple
+            </button>
+            <button onclick="handleSocialAuth('Campus SSO', 'STUDENT')" class="border border-brand-200 bg-brand-50 hover:bg-brand-100 p-2 rounded-lg font-bold text-brand-700 flex items-center justify-center gap-1">
+              Campus SSO
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Presets -->
+        <div class="pt-2 border-t border-slate-100">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Quick Demo Profiles:</p>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="presetLogin('knchile@gmail.com', 'Lusekelo@100')" class="bg-slate-100 hover:bg-slate-200 text-navy-900 py-1.5 px-2 rounded-lg text-[11px] font-bold">Admin</button>
+            <button onclick="presetLogin('thabo@unza.zm', 'Password123')" class="bg-slate-100 hover:bg-slate-200 text-navy-900 py-1.5 px-2 rounded-lg text-[11px] font-bold">Student</button>
+            <button onclick="presetLogin('mwansa@tembo.zm', 'Password123')" class="bg-slate-100 hover:bg-slate-200 text-navy-900 py-1.5 px-2 rounded-lg text-[11px] font-bold">Landlord</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. CREATE ACCOUNT FORM -->
+      <div id="authSignUpForm" class="space-y-3 hidden">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Select Your Role</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="roleBtnStudent" onclick="selectSignupRole('STUDENT')" class="p-2 rounded-lg border-2 border-brand-600 bg-brand-50 text-brand-700 font-bold text-xs">🎓 Student</button>
+            <button id="roleBtnLandlord" onclick="selectSignupRole('LANDLORD')" class="p-2 rounded-lg border border-slate-200 text-slate-600 font-bold text-xs">🏢 Landlord</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+          <input id="signupName" type="text" placeholder="e.g. Kondwani Tembo" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+          <input id="signupEmail" type="email" placeholder="e.g. kondwani@gmail.com" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Zambian Mobile Money Phone</label>
+          <input id="signupPhone" type="tel" placeholder="+260 97 123 4567" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50" />
+        </div>
+        <div id="studentInstitutionField">
+          <label class="block text-xs font-bold text-slate-700 mb-1">University / College</label>
+          <select id="signupInstitution" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50 font-medium">
+            <option value="University of Zambia (UNZA)">UNZA (Great East Rd)</option>
+            <option value="Copperbelt University (CBU)">CBU (Kitwe)</option>
+            <option value="Mulungushi University">Mulungushi University</option>
+            <option value="Evelyn Hone College">Evelyn Hone College</option>
+            <option value="Apex Medical University">Apex Medical University</option>
+          </select>
+        </div>
+        <div id="landlordNrcField" class="hidden">
+          <label class="block text-xs font-bold text-slate-700 mb-1">National Registration Card (NRC Number)</label>
+          <input id="signupNrc" type="text" placeholder="e.g. 194820/11/1" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Create Password</label>
+          <input id="signupPassword" type="password" placeholder="••••••••" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50" />
+        </div>
+        <button onclick="handleSignUp()" class="w-full bg-navy-800 hover:bg-navy-900 text-white font-bold py-3 rounded-xl text-xs transition">
+          Create BedSpace Account
+        </button>
+
+        <div class="pt-2 border-t border-slate-200">
+          <p class="text-[11px] font-bold text-slate-500 mb-2">Or 1-Tap Sign Up with Social:</p>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <button onclick="handleSocialAuth('Google', currentSignupRole)" class="border border-slate-200 hover:bg-slate-50 p-2 rounded-lg font-bold text-navy-900 flex items-center justify-center">Google</button>
+            <button onclick="handleSocialAuth('Apple', currentSignupRole)" class="border border-slate-200 hover:bg-slate-50 p-2 rounded-lg font-bold text-navy-900 flex items-center justify-center">Apple</button>
+            <button onclick="handleSocialAuth('Campus SSO', currentSignupRole)" class="border border-brand-200 bg-brand-50 hover:bg-brand-100 p-2 rounded-lg font-bold text-brand-700 flex items-center justify-center">Campus SSO</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT GATEWAY MODAL (AIRTEL / MTN / ZAMTEL / CARD) -->
+  <div id="paymentModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="font-extrabold text-navy-900 text-base">Zambian Payment Gateway</h3>
+          <p class="text-[11px] text-slate-500">Secure Escrow Reservation Checkout</p>
+        </div>
+        <button onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+      </div>
+
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1 text-xs">
+        <div class="flex justify-between"><span class="text-slate-500">Property:</span><b id="payPropertyTitle" class="text-navy-900">Campus View Lodge</b></div>
+        <div class="flex justify-between"><span class="text-slate-500">Payment Type:</span><b class="text-brand-600">Reservation Deposit</b></div>
+        <div class="flex justify-between"><span class="text-slate-500">Total Amount:</span><b class="text-lg font-black text-navy-900">ZMW K200.00</b></div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-700">Select Mobile Money / Card Provider</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button id="prov-airtel" onclick="selectPaymentProvider('Airtel Money Zambia', '*778#')" class="p-2.5 rounded-xl border-2 border-red-500 bg-red-50 text-red-700 font-bold text-left">
+            <span class="block text-[11px] text-red-500">Airtel Money (*778#)</span>
+            <span class="text-xs">Zambia Direct</span>
+          </button>
+          <button id="prov-mtn" onclick="selectPaymentProvider('MTN MoMo', '*115#')" class="p-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-left">
+            <span class="block text-[11px] text-yellow-600">MTN MoMo (*115#)</span>
+            <span class="text-xs">Mobile Money</span>
+          </button>
+          <button id="prov-zamtel" onclick="selectPaymentProvider('Zamtel Kwacha', '*344#')" class="p-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-left">
+            <span class="block text-[11px] text-emerald-600">Zamtel Kwacha (*344#)</span>
+            <span class="text-xs">Zamtel Direct</span>
+          </button>
+          <button id="prov-card" onclick="selectPaymentProvider('Visa / Mastercard', 'Online')" class="p-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-left">
+            <span class="block text-[11px] text-blue-600">Debit / Card</span>
+            <span class="text-xs">Visa / Mastercard</span>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Mobile Money Number / Card Account</label>
+        <input id="payAccountNumber" type="tel" value="+260 97 112 3344" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs outline-none bg-slate-50" />
+      </div>
+
+      <div id="paymentPromptSim" class="hidden p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+        <p class="font-bold flex items-center gap-1">📱 USSD Prompt Sent to Mobile Phone</p>
+        <p class="text-[11px]">Check your phone for the PIN authorization prompt (Airtel *778# / MTN *115#). Confirming...</p>
+      </div>
+
+      <button id="paySubmitBtn" onclick="executePayment()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">
+        Authorize & Pay K200 Deposit
+      </button>
+    </div>
+  </div>
+
+  <!-- BOOKING DETAIL MODAL -->
+  <div id="bookingModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+        <h3 class="font-extrabold text-navy-900 text-base">Accommodation Details</h3>
+        <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+      </div>
       <div id="modalContent"></div>
     </div>
   </div>
 
-  <!-- CHATBOT FLOATING BUTTON -->
-  <div class="fixed bottom-6 right-6 z-40">
-    <button onclick="openChatModal()" class="bg-brand-600 hover:bg-brand-700 text-white p-3.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold transition hover:scale-105">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-      <span class="hidden sm:inline">BedSpace AI Advisor</span>
-    </button>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <p>© 2026 BedSpaceZM. Verified Student Accommodation Platform for Zambia. Built with Android Kotlin & Web Companion.</p>
-      <div class="flex gap-4 font-semibold text-slate-600">
-        <a href="#" onclick="switchTab('explore')" class="hover:text-brand-600">Explore</a>
-        <a href="#" onclick="switchTab('landlord')" class="hover:text-brand-600">Landlord KYC</a>
-        <a href="#" onclick="switchTab('download')" class="hover:text-brand-600">Android APK</a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- SCRIPT LOGIC -->
+  <!-- JAVASCRIPT STATE ENGINE & ROLE ISOLATION -->
   <script>
-    const propertiesData = [
+    // Registered Users Store
+    let usersData = [
+      {
+        id: 'usr_admin_main',
+        name: 'Admin',
+        email: 'knchile@gmail.com',
+        password: 'Lusekelo@100',
+        phone: '+260 97 000 0000',
+        role: 'ADMIN',
+        status: 'ACTIVE',
+        isVerified: true
+      },
+      {
+        id: 'usr_student_1',
+        name: 'Thabo Musonda',
+        email: 'thabo@unza.zm',
+        password: 'Password123',
+        phone: '+260 97 112 3344',
+        role: 'STUDENT',
+        institution: 'University of Zambia (UNZA)',
+        status: 'ACTIVE',
+        isVerified: true
+      },
+      {
+        id: 'usr_landlord_1',
+        name: 'Mr. Mwansa Tembo',
+        email: 'mwansa@tembo.zm',
+        password: 'Password123',
+        phone: '+260 96 688 2244',
+        role: 'LANDLORD',
+        nrcNumber: '194820/11/1',
+        status: 'ACTIVE',
+        isVerified: true
+      }
+    ];
+
+    // Current Session: DEFAULT NULL (Guest on Landing Page)
+    let currentUser = null;
+
+    let currentSignupRole = 'STUDENT';
+    let selectedProvider = 'Airtel Money Zambia';
+    let currentPayingProp = null;
+
+    // Properties Data
+    let propertiesData = [
       {
         id: 'prop_unza_1',
-        title: 'Campus View Lodge (UNZA Great East)',
+        title: 'Campus View Student Lodge',
         institution: 'UNZA',
-        institutionLabel: 'University of Zambia',
         distanceKm: 0.4,
         priceMonthlyKwacha: 1800,
         roomType: 'SINGLE_ROOM',
         roomTypeLabel: 'Single Room (Self-Contained)',
         landlordName: 'Mr. Mwansa Tembo',
         landlordPhone: '+260 96 688 2244',
-        isVerified: true,
-        address: 'Plot 418, Kalingalinga near UNZA G-Block Gate, Lusaka',
-        description: 'Clean tiled room with study desk, high-speed WiFi, solar inverter backup power, and 24/7 borehole water supply.',
-        amenities: ['⚡ Backup Solar', '📶 5G WiFi', '💧 Borehole Water', '🛡️ Guard Security', '🚿 Ensuite Bathroom'],
+        address: 'Plot 418, Goma Lakes Rd, Marshlands, Lusaka',
+        description: 'Modern self-contained studio with high-speed Wi-Fi, 24/7 borehole water, solar inverter backup for load-shedding, and tight security gate.',
         availableRooms: 3,
-        totalRooms: 8
-      },
-      {
-        id: 'prop_apex_1',
-        title: 'Apex Medical Heights Hostel',
-        institution: 'APEX',
-        institutionLabel: 'Apex Medical University',
-        distanceKm: 0.6,
-        priceMonthlyKwacha: 2200,
-        roomType: 'SINGLE_ROOM',
-        roomTypeLabel: 'Single Ensuite (Medical Student Quiet)',
-        landlordName: 'Dr. Joseph Phiri',
-        landlordPhone: '+260 97 881 1990',
-        isVerified: true,
-        address: 'Off Kasama Road, Chalala near Apex Medical Campus, Lusaka',
-        description: 'Dedicated quiet study environment for medical students with silent solar inverter, hot shower geyser, and shared modern kitchen.',
-        amenities: ['⚡ 24/7 Power', '📶 Fast WiFi', '📚 Study Hall', '💧 Hot Water', '🛡️ CCTV Monitored'],
-        availableRooms: 2,
-        totalRooms: 12
-      },
-      {
-        id: 'prop_cbu_1',
-        title: 'Riverside Annex Lodge (CBU)',
-        institution: 'CBU',
-        institutionLabel: 'Copperbelt University',
-        distanceKm: 0.5,
-        priceMonthlyKwacha: 1200,
-        roomType: 'DOUBLE_SHARING',
-        roomTypeLabel: '2 in a Room (Double Sharing)',
-        landlordName: 'Mrs. Chileshe Mulenga',
-        landlordPhone: '+260 95 512 8833',
-        isVerified: true,
-        address: 'Riverside West, Jambo Drive near CBU Gate 2, Kitwe',
-        description: 'Spacious double room with built-in wardrobes, study tables, secure wall fence, and caretaker on premise.',
-        amenities: ['📶 WiFi Included', '💧 Constant Water', '🛡️ Wall Fence', '🍳 Kitchen Access'],
-        availableRooms: 4,
-        totalRooms: 10
-      },
-      {
-        id: 'prop_hone_1',
-        title: 'Evelyn Hone Central Annex',
-        institution: 'EVELYN_HONE',
-        institutionLabel: 'Evelyn Hone College',
-        distanceKm: 0.3,
-        priceMonthlyKwacha: 1400,
-        roomType: 'DOUBLE_SHARING',
-        roomTypeLabel: '2 in a Room (Shared)',
-        landlordName: 'Mr. Patrick Zulu',
-        landlordPhone: '+260 97 334 5566',
-        isVerified: true,
-        address: 'Church Road area near Evelyn Hone College, Lusaka',
-        description: 'Convenient walking distance to town and college. Water tank and paved yard with locked gate.',
-        amenities: ['💧 Water Tank', '🛡️ Secure Gate', '🚶 3 Mins Walk', '📶 WiFi'],
-        availableRooms: 1,
-        totalRooms: 6
-      },
-      {
-        id: 'prop_mulungushi_1',
-        title: 'Great North Student Haven (Mulungushi)',
-        institution: 'MULUNGUSHI',
-        institutionLabel: 'Mulungushi University',
-        distanceKm: 1.2,
-        priceMonthlyKwacha: 1100,
-        roomType: 'FOUR_SHARING',
-        roomTypeLabel: '4 in a Room (Quad Sharing)',
-        landlordName: 'Elder Kelvin Bwalya',
-        landlordPhone: '+260 96 445 7788',
-        isVerified: true,
-        address: 'Great North Road, Main Campus vicinity, Kabwe',
-        description: 'Budget-friendly accommodation with spacious bunks, study area, dining hall, and free weekend campus shuttle.',
-        amenities: ['🚌 Free Shuttle', '💧 Water Supply', '🛡️ Night Guard', '📶 WiFi'],
-        availableRooms: 6,
-        totalRooms: 20
+        imageUrl: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80'
       },
       {
         id: 'prop_unza_2',
         title: 'Handsworth Park Student Villa',
         institution: 'UNZA',
-        institutionLabel: 'University of Zambia',
         distanceKm: 1.1,
         priceMonthlyKwacha: 2500,
         roomType: 'SINGLE_ROOM',
-        roomTypeLabel: 'Luxury Single Self-Contained',
-        landlordName: 'Mrs. Gertrude Mwila',
-        landlordPhone: '+260 97 990 0112',
-        isVerified: true,
-        address: 'Handsworth Park, Off Great East Road, Lusaka',
-        description: 'Premium student living with air conditioning, swimming pool access, solar backup system, and daily cleaning.',
-        amenities: ['⚡ Solar Backup', '📶 Fiber WiFi', '❄️ Air Conditioner', '🛡️ Electric Fence'],
+        roomTypeLabel: '1 Bedroom Self-Contained',
+        landlordName: 'Mrs. Bwalya Chanda',
+        landlordPhone: '+260 97 733 9911',
+        address: 'Handsworth Park, Off Great East Rd, Lusaka',
+        description: 'Peaceful private compound, fully furnished with bed, study desk, geyser hot shower, and daily security guards.',
+        availableRooms: 1,
+        imageUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'prop_cbu_1',
+        title: 'Riverside Annex Student Lodge',
+        institution: 'CBU',
+        distanceKm: 0.5,
+        priceMonthlyKwacha: 1200,
+        roomType: 'DOUBLE_SHARING',
+        roomTypeLabel: '2-in-a-Room Bedspace',
+        landlordName: 'Mrs. Chileshe Mulenga',
+        landlordPhone: '+260 96 555 4422',
+        address: 'Jambo Drive, Riverside, Kitwe',
+        description: 'Affordable double-sharing student hostel 5 minutes walk from CBU main gate. Steady water and dedicated study tables.',
+        availableRooms: 4,
+        imageUrl: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'prop_mulungushi_1',
+        title: 'Great North Student Haven',
+        institution: 'MULUNGUSHI',
+        distanceKm: 1.5,
+        priceMonthlyKwacha: 1100,
+        roomType: 'BEDSPACE',
+        roomTypeLabel: 'Shared Bedspace',
+        landlordName: 'Mr. Patrick Zulu',
+        landlordPhone: '+260 97 888 1122',
+        address: 'Great North Rd, Main Campus Vicinity, Kabwe',
+        description: 'Close to lecture halls with shared kitchen, high-speed Wi-Fi, and solar perimeter lighting.',
+        availableRooms: 5,
+        imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'prop_evelyn_1',
+        title: 'Evelyn Hone Central Annex',
+        institution: 'EVELYN_HONE',
+        distanceKm: 0.3,
+        priceMonthlyKwacha: 1400,
+        roomType: 'DOUBLE_SHARING',
+        roomTypeLabel: '2-in-a-Room',
+        landlordName: 'Mr. Kelvin Banda',
+        landlordPhone: '+260 95 444 3322',
+        address: 'Church Road, Town Centre, Lusaka',
+        description: 'Walking distance to Evelyn Hone campus with hot showers, perimeter electric fence, and borehole water.',
         availableRooms: 2,
-        totalRooms: 4
+        imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'prop_apex_1',
+        title: 'Apex Medical Heights Hostel',
+        institution: 'APEX',
+        distanceKm: 0.6,
+        priceMonthlyKwacha: 2200,
+        roomType: 'SINGLE_ROOM',
+        roomTypeLabel: 'Quiet Study Single',
+        landlordName: 'Dr. Joseph Phiri',
+        landlordPhone: '+260 97 222 6688',
+        address: 'Chalala / Apex Campus Rd, Lusaka',
+        description: 'Designed for medical students requiring silent study environments, uninterrupted solar power, and 24/7 water supply.',
+        availableRooms: 2,
+        imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80'
       }
     ];
 
     let studentRequests = [
       {
-        id: 'req_1',
-        propertyTitle: 'Campus View Lodge (UNZA Great East)',
+        id: 'req_101',
+        propertyTitle: 'Campus View Student Lodge',
         roomType: 'Single Room (Self-Contained)',
         landlordName: 'Mr. Mwansa Tembo',
         landlordPhone: '+260 96 688 2244',
         status: 'CONFIRMED',
-        requestDate: 'Aug 28, 2026',
-        message: 'Hello, looking for a quiet room starting next semester. Is the backup solar active?'
-      },
-      {
-        id: 'req_2',
-        propertyTitle: 'Apex Medical Heights Hostel',
-        roomType: 'Single Ensuite',
-        landlordName: 'Dr. Joseph Phiri',
-        landlordPhone: '+260 97 881 1990',
-        status: 'PENDING',
-        requestDate: 'Aug 30, 2026',
-        message: 'Hi Dr. Phiri, I am a 3rd year medical student looking for a single room.'
+        requestDate: '2 hours ago',
+        message: 'Looking for a quiet self-contained room for Semester 1.'
       }
     ];
 
+    // RENDER ROLE-SPECIFIC NAVIGATION BAR
+    function renderNavigation() {
+      const nav = document.getElementById('dynamicNav');
+      const authContainer = document.getElementById('userAuthContainer');
+      nav.innerHTML = '';
+
+      if (!currentUser) {
+        // GUEST (Not logged in)
+        nav.innerHTML = `
+          <button id="nav-explore" onclick="switchTab('explore')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition">Find Housing</button>
+          <button id="nav-faqs" onclick="switchTab('faqs')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">Help & FAQs</button>
+          <button id="nav-ai" onclick="switchTab('ai')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-600"></span>AI Advisor</button>
+        `;
+        authContainer.innerHTML = `
+          <button onclick="openAuthModal()" class="bg-navy-800 hover:bg-navy-900 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">
+            Sign In / Register
+          </button>
+        `;
+      } else if (currentUser.role === 'STUDENT') {
+        // STUDENT ONLY
+        nav.innerHTML = `
+          <button id="nav-explore" onclick="switchTab('explore')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition">Find Housing</button>
+          <button id="nav-student" onclick="switchTab('student')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">My Student Portal</button>
+          <button id="nav-faqs" onclick="switchTab('faqs')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">Help & FAQs</button>
+          <button id="nav-ai" onclick="switchTab('ai')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-600"></span>AI Advisor</button>
+        `;
+        authContainer.innerHTML = `
+          <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl">
+            <span class="text-xs font-bold text-blue-900">🎓 ${currentUser.name.split(' ')[0]}</span>
+            <button onclick="handleLogout()" class="text-[11px] text-red-600 hover:underline font-bold ml-1">Sign Out</button>
+          </div>
+        `;
+      } else if (currentUser.role === 'LANDLORD') {
+        // LANDLORD ONLY
+        nav.innerHTML = `
+          <button id="nav-landlord" onclick="switchTab('landlord')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition">My Properties & KYC</button>
+          <button id="nav-explore" onclick="switchTab('explore')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">Browse Market</button>
+          <button id="nav-faqs" onclick="switchTab('faqs')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">Help & FAQs</button>
+        `;
+        authContainer.innerHTML = `
+          <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+            <span class="text-xs font-bold text-emerald-900">🏢 ${currentUser.name.split(' ')[0]}</span>
+            <button onclick="handleLogout()" class="text-[11px] text-red-600 hover:underline font-bold ml-1">Sign Out</button>
+          </div>
+        `;
+      } else if (currentUser.role === 'ADMIN') {
+        // ADMIN ONLY
+        nav.innerHTML = `
+          <button id="nav-admin" onclick="switchTab('admin')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition">Admin Console</button>
+          <button id="nav-explore" onclick="switchTab('explore')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">Market View</button>
+          <button id="nav-student" onclick="switchTab('student')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">Student View</button>
+          <button id="nav-landlord" onclick="switchTab('landlord')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition">Landlord View</button>
+        `;
+        authContainer.innerHTML = `
+          <div class="flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded-xl">
+            <span class="text-xs font-bold text-navy-900">🛡️ Super Admin</span>
+            <button onclick="handleLogout()" class="text-[11px] text-red-600 hover:underline font-bold ml-1">Sign Out</button>
+          </div>
+        `;
+      }
+    }
+
+    // SWITCH TAB WITH ROLE RESTRICTION
+    function switchTab(tab) {
+      // Permission check
+      if (tab === 'student' && (!currentUser || (currentUser.role !== 'STUDENT' && currentUser.role !== 'ADMIN'))) {
+        openAuthModal();
+        return;
+      }
+      if (tab === 'landlord' && (!currentUser || (currentUser.role !== 'LANDLORD' && currentUser.role !== 'ADMIN'))) {
+        openAuthModal();
+        return;
+      }
+      if (tab === 'admin' && (!currentUser || currentUser.role !== 'ADMIN')) {
+        openAuthModal();
+        return;
+      }
+
+      const views = ['explore', 'student', 'landlord', 'admin', 'ai', 'faqs'];
+      views.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        const nav = document.getElementById('nav-' + v);
+        if (v === tab) {
+          if (el) el.classList.remove('hidden');
+          if (nav) nav.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition';
+        } else {
+          if (el) el.classList.add('hidden');
+          if (nav) nav.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition';
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // RENDER PROPERTY LISTINGS
     function renderProperties(list) {
       const grid = document.getElementById('propertyGrid');
       grid.innerHTML = '';
@@ -564,42 +866,30 @@
         card.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between';
         card.innerHTML = `
           <div>
-            <div class="h-44 bg-slate-800 relative p-4 flex flex-col justify-between text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);">
-              <div class="flex justify-between items-start">
-                <span class="badge-institution text-xs px-2.5 py-1 rounded-full font-bold bg-white/90 text-navy-900 border-none">
-                  ${prop.institution} · ${prop.distanceKm} km away
-                </span>
-                ${prop.isVerified ? '<span class="badge-verified text-xs px-2.5 py-1 rounded-full font-bold">✓ VERIFIED</span>' : ''}
+            <div class="relative h-44 bg-slate-200">
+              <img src="${prop.imageUrl}" alt="${prop.title}" class="w-full h-full object-cover" />
+              <div class="absolute top-3 left-3 flex gap-1.5">
+                <span class="badge-institution text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${prop.institution}</span>
+                <span class="badge-verified text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">✓ Anti-Scam Verified</span>
               </div>
-              <div>
-                <p class="text-xs text-brand-200 font-semibold">${prop.institutionLabel}</p>
-                <h3 class="text-base font-extrabold text-white leading-tight">${prop.title}</h3>
+              <div class="absolute bottom-3 right-3 bg-navy-900/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-extrabold">
+                K${prop.priceMonthlyKwacha} / mo
               </div>
             </div>
-
-            <div class="p-4 space-y-3">
-              <div class="flex justify-between items-baseline">
-                <div>
-                  <span class="text-2xl font-extrabold text-navy-900">K${prop.priceMonthlyKwacha}</span>
-                  <span class="text-xs text-slate-500 font-medium">/ month</span>
-                </div>
-                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded font-medium">${prop.roomTypeLabel}</span>
-              </div>
-
-              <p class="text-xs text-slate-600 line-clamp-2">${prop.description}</p>
-
-              <div class="flex flex-wrap gap-1.5 pt-1">
-                ${prop.amenities.map(a => `<span class="bg-slate-100 text-slate-700 text-[11px] px-2 py-0.5 rounded font-medium">${a}</span>`).join('')}
-              </div>
+            <div class="p-4 space-y-2">
+              <h3 class="font-extrabold text-navy-900 text-sm leading-snug">${prop.title}</h3>
+              <p class="text-slate-500 text-xs flex items-center gap-1">
+                📍 ${prop.distanceKm} km to campus · ${prop.roomTypeLabel}
+              </p>
+              <p class="text-slate-600 text-xs line-clamp-2">${prop.description}</p>
             </div>
           </div>
-
-          <div class="p-4 pt-0 border-t border-slate-100 flex items-center justify-between mt-3">
+          <div class="p-4 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
             <div class="text-[11px] text-slate-500">
-              <b>${prop.availableRooms}</b> of ${prop.totalRooms} rooms left
+              Landlord: <b class="text-navy-900">${prop.landlordName}</b>
             </div>
-            <button onclick="openBookingModal('${prop.id}')" class="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-lg text-xs font-bold transition">
-              Book / View Details
+            <button onclick="openBookingModal('${prop.id}')" class="bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+              Book / Deposit
             </button>
           </div>
         `;
@@ -625,6 +915,300 @@
       renderProperties(filtered);
     }
 
+    // AUTHENTICATION LOGIC
+    function openAuthModal() {
+      document.getElementById('authModal').classList.remove('hidden');
+      hideAuthAlert();
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+    }
+
+    function setAuthTab(tab) {
+      hideAuthAlert();
+      if (tab === 'signin') {
+        document.getElementById('authSignInForm').classList.remove('hidden');
+        document.getElementById('authSignUpForm').classList.add('hidden');
+        document.getElementById('authTabSignIn').className = 'flex-1 py-2.5 border-b-2 border-brand-600 text-brand-600 text-center';
+        document.getElementById('authTabSignUp').className = 'flex-1 py-2.5 border-b-2 border-transparent text-slate-500 text-center hover:text-navy-900';
+      } else {
+        document.getElementById('authSignInForm').classList.add('hidden');
+        document.getElementById('authSignUpForm').classList.remove('hidden');
+        document.getElementById('authTabSignUp').className = 'flex-1 py-2.5 border-b-2 border-brand-600 text-brand-600 text-center';
+        document.getElementById('authTabSignIn').className = 'flex-1 py-2.5 border-b-2 border-transparent text-slate-500 text-center hover:text-navy-900';
+      }
+    }
+
+    function selectSignupRole(role) {
+      currentSignupRole = role;
+      if (role === 'STUDENT') {
+        document.getElementById('roleBtnStudent').className = 'p-2 rounded-lg border-2 border-brand-600 bg-brand-50 text-brand-700 font-bold text-xs';
+        document.getElementById('roleBtnLandlord').className = 'p-2 rounded-lg border border-slate-200 text-slate-600 font-bold text-xs';
+        document.getElementById('studentInstitutionField').classList.remove('hidden');
+        document.getElementById('landlordNrcField').classList.add('hidden');
+      } else {
+        document.getElementById('roleBtnLandlord').className = 'p-2 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-700 font-bold text-xs';
+        document.getElementById('roleBtnStudent').className = 'p-2 rounded-lg border border-slate-200 text-slate-600 font-bold text-xs';
+        document.getElementById('landlordNrcField').classList.remove('hidden');
+        document.getElementById('studentInstitutionField').classList.add('hidden');
+      }
+    }
+
+    function showAuthAlert(msg, isError = true) {
+      const alert = document.getElementById('authAlert');
+      alert.innerText = msg;
+      alert.className = isError ? 'p-3 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 block' : 'p-3 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 block';
+    }
+
+    function hideAuthAlert() {
+      document.getElementById('authAlert').className = 'hidden';
+    }
+
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value.trim();
+
+      const user = usersData.find(u => u.email.toLowerCase() === email && u.password === password);
+      if (!user) {
+        showAuthAlert('Invalid email or password. Please check your credentials.');
+        return;
+      }
+
+      if (user.status === 'BANNED') {
+        showAuthAlert('❌ This account has been permanently BANNED by the administrator.');
+        return;
+      }
+      if (user.status === 'BLOCKED') {
+        showAuthAlert('⚠️ Your account is currently BLOCKED. Please contact admin@bedspace.zm');
+        return;
+      }
+
+      currentUser = user;
+      closeAuthModal();
+      renderNavigation();
+      renderAdminUsers();
+
+      if (user.role === 'ADMIN') switchTab('admin');
+      else if (user.role === 'LANDLORD') switchTab('landlord');
+      else switchTab('student');
+    }
+
+    function presetLogin(email, password) {
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = password;
+      handleLogin();
+    }
+
+    function handleSignUp() {
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+      const phone = document.getElementById('signupPhone').value.trim();
+      const password = document.getElementById('signupPassword').value.trim();
+
+      if (!name || !email || !password || !phone) {
+        showAuthAlert('Please fill in all required fields.');
+        return;
+      }
+
+      if (usersData.some(u => u.email.toLowerCase() === email)) {
+        showAuthAlert('An account with this email address already exists.');
+        return;
+      }
+
+      const newUser = {
+        id: 'usr_' + Date.now(),
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        role: currentSignupRole,
+        institution: currentSignupRole === 'STUDENT' ? document.getElementById('signupInstitution').value : null,
+        nrcNumber: currentSignupRole === 'LANDLORD' ? document.getElementById('signupNrc').value : null,
+        status: 'ACTIVE',
+        isVerified: true
+      };
+
+      usersData.push(newUser);
+      currentUser = newUser;
+      closeAuthModal();
+      renderNavigation();
+      renderAdminUsers();
+
+      if (newUser.role === 'LANDLORD') switchTab('landlord');
+      else switchTab('student');
+    }
+
+    function handleSocialAuth(provider, role) {
+      const email = role === 'LANDLORD' ? 'landlord.social@gmail.com' : 'student.social@gmail.com';
+      let user = usersData.find(u => u.email.toLowerCase() === email);
+
+      if (!user) {
+        user = {
+          id: 'usr_social_' + Date.now(),
+          name: provider + ' ' + (role === 'LANDLORD' ? 'Landlord' : 'Student'),
+          email: email,
+          password: 'OAuth_Pass_Auto',
+          phone: '+260 97 555 1234',
+          role: role,
+          institution: role === 'STUDENT' ? 'University of Zambia (UNZA)' : null,
+          status: 'ACTIVE',
+          socialProvider: provider,
+          isVerified: true
+        };
+        usersData.push(newUser = user);
+      }
+
+      if (user.status === 'BANNED' || user.status === 'BLOCKED') {
+        showAuthAlert('This social account is restricted by platform moderation.');
+        return;
+      }
+
+      currentUser = user;
+      closeAuthModal();
+      renderNavigation();
+      renderAdminUsers();
+
+      if (user.role === 'ADMIN') switchTab('admin');
+      else if (user.role === 'LANDLORD') switchTab('landlord');
+      else switchTab('student');
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      renderNavigation();
+      switchTab('explore');
+    }
+
+    // ADMIN USER MODERATION CONTROLS (BAN, BLOCK, UNBLOCK, DELETE)
+    function renderAdminUsers() {
+      const tbody = document.getElementById('adminUserTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      usersData.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = u.status === 'BANNED' ? 'bg-red-50/50' : u.status === 'BLOCKED' ? 'bg-amber-50/50' : '';
+        
+        let statusBadge = `<span class="badge-verified px-2 py-0.5 rounded-full font-bold">ACTIVE</span>`;
+        if (u.status === 'BLOCKED') statusBadge = `<span class="badge-blocked px-2 py-0.5 rounded-full font-bold">BLOCKED</span>`;
+        if (u.status === 'BANNED') statusBadge = `<span class="badge-banned px-2 py-0.5 rounded-full font-bold">BANNED</span>`;
+
+        let actionBtns = '';
+        if (u.role !== 'ADMIN') {
+          if (u.status === 'ACTIVE') {
+            actionBtns = `
+              <button onclick="blockUser('${u.id}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-1 rounded text-[10px] font-bold mr-1">Block</button>
+              <button onclick="banUser('${u.id}')" class="bg-red-100 hover:bg-red-200 text-red-900 px-2 py-1 rounded text-[10px] font-bold mr-1">Ban</button>
+              <button onclick="deleteUser('${u.id}')" class="text-slate-400 hover:text-red-600 text-sm font-bold">🗑️</button>
+            `;
+          } else {
+            actionBtns = `
+              <button onclick="unblockUser('${u.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 rounded text-[10px] font-bold mr-1">Unblock / Restore</button>
+              <button onclick="deleteUser('${u.id}')" class="text-slate-400 hover:text-red-600 text-sm font-bold">🗑️</button>
+            `;
+          }
+        } else {
+          actionBtns = `<span class="text-slate-400 italic text-[11px]">Super Admin (Protected)</span>`;
+        }
+
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-navy-900">${u.name}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.role === 'ADMIN' ? 'bg-slate-200 text-slate-800' : u.role === 'LANDLORD' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${u.role}</span></td>
+          <td class="p-3 text-slate-600">${u.email} · ${u.phone}</td>
+          <td class="p-3">${statusBadge}</td>
+          <td class="p-3 text-right">${actionBtns}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('adminUserCount').innerText = `${usersData.length} Users`;
+    }
+
+    function blockUser(id) {
+      const u = usersData.find(user => user.id === id);
+      if (u) {
+        u.status = 'BLOCKED';
+        if (currentUser && currentUser.id === id) handleLogout();
+        renderAdminUsers();
+        alert(`⚠️ User ${u.name} has been BLOCKED from accessing the platform.`);
+      }
+    }
+
+    function unblockUser(id) {
+      const u = usersData.find(user => user.id === id);
+      if (u) {
+        u.status = 'ACTIVE';
+        renderAdminUsers();
+        alert(`✓ User ${u.name} has been UNBLOCKED and restored to active status.`);
+      }
+    }
+
+    function banUser(id) {
+      const u = usersData.find(user => user.id === id);
+      if (u) {
+        u.status = 'BANNED';
+        if (currentUser && currentUser.id === id) handleLogout();
+        renderAdminUsers();
+        alert(`🚫 User ${u.name} has been permanently BANNED.`);
+      }
+    }
+
+    function deleteUser(id) {
+      if (confirm('Are you sure you want to permanently delete this user?')) {
+        usersData = usersData.filter(user => user.id !== id);
+        if (currentUser && currentUser.id === id) handleLogout();
+        renderAdminUsers();
+      }
+    }
+
+    function approveLandlordKyc() {
+      alert('✓ Landlord KYC and NRC document approved! Property listing is now live with Verified Badge.');
+    }
+
+    // PAYMENT GATEWAY INTEGRATION
+    function openPaymentModal(propId) {
+      currentPayingProp = propertiesData.find(p => p.id === propId) || propertiesData[0];
+      document.getElementById('payPropertyTitle').innerText = currentPayingProp.title;
+      document.getElementById('paymentPromptSim').classList.add('hidden');
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    function selectPaymentProvider(name, ussd) {
+      selectedProvider = name;
+      ['airtel', 'mtn', 'zamtel', 'card'].forEach(k => {
+        const btn = document.getElementById('prov-' + k);
+        btn.className = 'p-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-left';
+      });
+      if (name.includes('Airtel')) document.getElementById('prov-airtel').className = 'p-2.5 rounded-xl border-2 border-red-500 bg-red-50 text-red-700 font-bold text-left';
+      if (name.includes('MTN')) document.getElementById('prov-mtn').className = 'p-2.5 rounded-xl border-2 border-yellow-500 bg-yellow-50 text-yellow-800 font-bold text-left';
+      if (name.includes('Zamtel')) document.getElementById('prov-zamtel').className = 'p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-bold text-left';
+      if (name.includes('Visa')) document.getElementById('prov-card').className = 'p-2.5 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 font-bold text-left';
+    }
+
+    function executePayment() {
+      const phone = document.getElementById('payAccountNumber').value;
+      const sim = document.getElementById('paymentPromptSim');
+      const btn = document.getElementById('paySubmitBtn');
+
+      sim.classList.remove('hidden');
+      btn.innerText = 'Processing Mobile Money Authorization...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        sim.classList.add('hidden');
+        btn.innerText = 'Authorize & Pay K200 Deposit';
+        btn.disabled = false;
+        closePaymentModal();
+        alert(`🎉 Payment Successful via ${selectedProvider}!\n\nReference: ZMW-DEP-${Date.now().toString().slice(-6)}\nAmount: K200.00\nDeposit held in BedSpaceZM Escrow.`);
+      }, 1500);
+    }
+
+    // BOOKING DETAIL MODAL
     function openBookingModal(propId) {
       const prop = propertiesData.find(p => p.id === propId);
       if (!prop) return;
@@ -648,24 +1232,24 @@
 
           <p class="text-xs text-slate-700 leading-relaxed">${prop.description}</p>
 
-          <!-- Anti-Scam Notice -->
           <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-xs space-y-1">
-            <p class="font-bold text-blue-900 flex items-center gap-1.5">
-              🛡️ Scam Protection Active
-            </p>
-            <p class="text-blue-800 text-[11px]">
-              Landlord: <b>${prop.landlordName}</b>. Phone numbers remain protected until you send a booking inquiry and the landlord confirms your availability.
-            </p>
+            <p class="font-bold text-blue-900 flex items-center gap-1.5">🛡️ Scam Protection Active</p>
+            <p class="text-blue-800 text-[11px]">Landlord: <b>${prop.landlordName}</b>. Direct contact unlocks once your inquiry is confirmed or deposit is placed.</p>
           </div>
 
           <div class="space-y-2">
             <label class="text-xs font-bold text-slate-700">Message to Landlord</label>
-            <textarea id="bookingMsg" class="w-full border border-slate-200 rounded-xl p-3 text-xs outline-none bg-slate-50 focus:border-brand-600" rows="3" placeholder="Hello, I am a student interested in renting this room for the upcoming term."></textarea>
+            <textarea id="bookingMsg" class="w-full border border-slate-200 rounded-xl p-3 text-xs outline-none bg-slate-50 focus:border-brand-600" rows="2" placeholder="Hello, I am a student interested in renting this room."></textarea>
           </div>
 
-          <button onclick="submitBooking('${prop.id}')" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl text-xs transition">
-            Send Booking Inquiry to Landlord
-          </button>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="submitBooking('${prop.id}')" class="bg-navy-800 hover:bg-navy-900 text-white font-bold py-3 rounded-xl text-xs transition">
+              Send Inquiry
+            </button>
+            <button onclick="closeBookingModal(); openPaymentModal('${prop.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">
+              Pay K200 Deposit
+            </button>
+          </div>
         </div>
       `;
       modal.classList.remove('hidden');
@@ -676,6 +1260,11 @@
     }
 
     function submitBooking(propId) {
+      if (!currentUser) {
+        closeBookingModal();
+        openAuthModal();
+        return;
+      }
       const prop = propertiesData.find(p => p.id === propId);
       const msg = document.getElementById('bookingMsg').value || 'Student booking inquiry.';
       studentRequests.unshift({
@@ -689,7 +1278,7 @@
         message: msg
       });
       closeBookingModal();
-      alert('🎉 Booking inquiry sent successfully to ' + prop.landlordName + '! You can view it under Student Portal.');
+      alert('🎉 Booking inquiry sent successfully to ' + prop.landlordName + '!');
       renderStudentRequests();
       renderLandlordRequests();
       switchTab('student');
@@ -697,6 +1286,7 @@
 
     function renderStudentRequests() {
       const list = document.getElementById('studentRequestsList');
+      if (!list) return;
       list.innerHTML = '';
       studentRequests.forEach(req => {
         const item = document.createElement('div');
@@ -731,6 +1321,7 @@
 
     function renderLandlordRequests() {
       const list = document.getElementById('landlordIncomingList');
+      if (!list) return;
       list.innerHTML = '';
       studentRequests.forEach(req => {
         const item = document.createElement('div');
@@ -768,26 +1359,6 @@
       }
     }
 
-    function switchTab(tab) {
-      const views = ['explore', 'student', 'landlord', 'admin', 'ai', 'download'];
-      views.forEach(v => {
-        const el = document.getElementById('view-' + v);
-        const nav = document.getElementById('nav-' + v);
-        if (v === tab) {
-          if (el) el.classList.remove('hidden');
-          if (nav) {
-            nav.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50 transition';
-          }
-        } else {
-          if (el) el.classList.add('hidden');
-          if (nav) {
-            nav.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition';
-          }
-        }
-      });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     function openChatModal() {
       switchTab('ai');
     }
@@ -798,14 +1369,12 @@
       if (!text) return;
       const box = document.getElementById('aiChatBox');
 
-      // User Message
       const userDiv = document.createElement('div');
       userDiv.className = 'bg-brand-600 text-white p-3 rounded-xl max-w-md ml-auto shadow-sm';
       userDiv.innerHTML = `<p class="font-bold text-brand-100 mb-0.5">You:</p><p>${text}</p>`;
       box.appendChild(userDiv);
       input.value = '';
 
-      // AI Response generator
       setTimeout(() => {
         const aiDiv = document.createElement('div');
         aiDiv.className = 'bg-white p-3 rounded-xl border border-slate-200 max-w-md shadow-sm';
@@ -831,10 +1400,12 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // Initialize on load
+    // INITIALIZATION ON LOAD (GUEST DEFAULT LANDING PAGE)
+    renderNavigation();
     renderProperties(propertiesData);
     renderStudentRequests();
     renderLandlordRequests();
+    renderAdminUsers();
   </script>
 </body>
 </html>

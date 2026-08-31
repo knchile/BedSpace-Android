@@ -101,6 +101,7 @@ import com.example.ui.theme.White
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
+import com.example.data.auth.AuthRepository
 import com.example.data.neon.NeonRepository
 import com.example.model.BookingRequest
 import com.example.model.BookingStatus
@@ -119,6 +120,7 @@ fun LandingPage(
     var searchQuery by remember { mutableStateOf("") }
     var selectedPropertyForDetail by remember { mutableStateOf<Property?>(null) }
 
+    val currentUser by AuthRepository.currentUser.collectAsState()
     val properties by NeonRepository.properties.collectAsState()
 
     // Filter properties based on search panel criteria
@@ -306,9 +308,9 @@ fun LandingPage(
                     institution = prop.institution,
                     roomType = prop.roomType,
                     monthlyPrice = prop.priceMonthlyKwacha,
-                    studentName = "Thabo Musonda",
-                    studentPhone = "+260 97 112 3344",
-                    studentEmail = "thabo.unza@gmail.com",
+                    studentName = currentUser?.name ?: "Student Applicant",
+                    studentPhone = currentUser?.phone?.ifBlank { null } ?: "+260 97 112 3344",
+                    studentEmail = currentUser?.email ?: "student@bedspace.zm",
                     landlordName = prop.landlordName,
                     landlordPhone = "+260 96 688 2244",
                     landlordWhatsapp = "+260 96 688 2244",

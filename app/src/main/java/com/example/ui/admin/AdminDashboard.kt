@@ -69,6 +69,8 @@ import com.example.model.VerificationStatus
 import com.example.ui.components.ListingStatusBadge
 import com.example.ui.components.StatCard
 import com.example.ui.components.VerificationStatusBadge
+import com.example.ui.theme.Amber200
+import com.example.ui.theme.Amber50
 import com.example.ui.theme.Amber700
 import com.example.ui.theme.Blue100
 import com.example.ui.theme.Blue50
@@ -88,14 +90,20 @@ import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate50
 import com.example.ui.theme.Slate500
+import com.example.ui.theme.Slate600
 import com.example.ui.theme.Slate700
 import com.example.ui.theme.White
 
 import com.example.data.auth.AuthRepository
 import com.example.data.payment.PaymentRepository
+import com.example.model.UserRole
+import com.example.model.UserStatus
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
 
 @Composable
 fun AdminDashboard(
@@ -400,20 +408,20 @@ fun AdminDashboard(
                 items(allUsers, key = { it.id }) { user ->
                     Card(
                         shape = RoundedCornerShape(10.dp),
-                        colors = CardDefaults.cardColors(containerColor = White),
-                        border = BorderStroke(1.dp, Slate200),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (user.status == UserStatus.BANNED) Red50.copy(alpha = 0.5f) else if (user.status == UserStatus.BLOCKED) Amber50.copy(alpha = 0.5f) else White
+                        ),
+                        border = BorderStroke(1.dp, if (user.status == UserStatus.BANNED) Red100 else if (user.status == UserStatus.BLOCKED) Amber200 else Slate200),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 6.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Text(
                                         text = user.name,
@@ -423,29 +431,147 @@ fun AdminDashboard(
                                     )
                                     Surface(
                                         shape = RoundedCornerShape(4.dp),
-                                        color = if (user.role.name == "ADMIN") Slate100 else if (user.role.name == "LANDLORD") Green50 else Blue50
+                                        color = if (user.role == UserRole.ADMIN) Slate100 else if (user.role == UserRole.LANDLORD) Green50 else Blue50
                                     ) {
                                         Text(
                                             text = user.role.label,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 9.sp,
-                                            color = if (user.role.name == "LANDLORD") Green700 else Blue600,
+                                            color = if (user.role == UserRole.LANDLORD) Green700 else if (user.role == UserRole.STUDENT) Blue600 else Navy900,
                                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                         )
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "${user.email} • ${user.phone}",
-                                    fontSize = 11.sp,
-                                    color = Slate500
-                                )
-                                if (user.institution != null) {
-                                    Text(
-                                        text = "Campus: ${user.institution}",
-                                        fontSize = 11.sp,
-                                        color = Slate700
+
+                                // Status Badge
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = when (user.status) {
+                                        UserStatus.ACTIVE -> Green50
+                                        UserStatus.BLOCKED -> Amber50
+                                        UserStatus.BANNED -> Red50
+                                    },
+                                    border = BorderStroke(
+                                        1.dp,
+                                        when (user.status) {
+                                            UserStatus.ACTIVE -> Green600.copy(alpha = 0.3f)
+                                            UserStatus.BLOCKED -> Amber700.copy(alpha = 0.3f)
+                                            UserStatus.BANNED -> Red600.copy(alpha = 0.3f)
+                                        }
                                     )
+                                ) {
+                                    Text(
+                                        text = user.status.label.uppercase(),
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 9.sp,
+                                        color = when (user.status) {
+                                            UserStatus.ACTIVE -> Green700
+                                            UserStatus.BLOCKED -> Amber700
+                                            UserStatus.BANNED -> Red600
+                                        },
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${user.email} • ${user.phone}",
+                                fontSize = 11.sp,
+                                color = Slate600
+                            )
+                            if (user.institution != null) {
+                                Text(
+                                    text = "Campus: ${user.institution}",
+                                    fontSize = 11.sp,
+                                    color = Slate700
+                                )
+                            }
+                            if (user.nrcNumber != null) {
+                                Text(
+                                    text = "NRC ID: ${user.nrcNumber}",
+                                    fontSize = 11.sp,
+                                    color = Slate700
+                                )
+                            }
+                            if (user.socialProvider != null) {
+                                Text(
+                                    text = "Signed up via: ${user.socialProvider}",
+                                    fontSize = 10.sp,
+                                    color = Blue600,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            if (user.blockReason != null) {
+                                Text(
+                                    text = "Reason: ${user.blockReason}",
+                                    fontSize = 10.sp,
+                                    color = Red600,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+
+                            // Admin Actions for non-admin accounts
+                            if (user.role != UserRole.ADMIN) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    if (user.status == UserStatus.ACTIVE) {
+                                        OutlinedButton(
+                                            onClick = {
+                                                AuthRepository.blockUser(user.id, "Violation of BedSpaceZM security policies")
+                                            },
+                                            shape = RoundedCornerShape(6.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Amber700),
+                                            border = BorderStroke(1.dp, Amber700),
+                                            modifier = Modifier.weight(1f).height(32.dp)
+                                        ) {
+                                            Icon(Icons.Filled.Block, contentDescription = null, modifier = Modifier.size(12.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Block User", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        }
+
+                                        OutlinedButton(
+                                            onClick = {
+                                                AuthRepository.banUser(user.id, "Permanent ban for fraudulent activity")
+                                            },
+                                            shape = RoundedCornerShape(6.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Red600),
+                                            border = BorderStroke(1.dp, Red600),
+                                            modifier = Modifier.weight(1f).height(32.dp)
+                                        ) {
+                                            Icon(Icons.Filled.Warning, contentDescription = null, modifier = Modifier.size(12.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Ban Account", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    } else {
+                                        Button(
+                                            onClick = {
+                                                AuthRepository.unblockUser(user.id)
+                                            },
+                                            shape = RoundedCornerShape(6.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Green700),
+                                            modifier = Modifier.weight(1f).height(32.dp)
+                                        ) {
+                                            Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(12.dp), tint = White)
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Unblock / Restore", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = White)
+                                        }
+                                    }
+
+                                    OutlinedButton(
+                                        onClick = {
+                                            AuthRepository.deleteUser(user.id)
+                                        },
+                                        shape = RoundedCornerShape(6.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate600),
+                                        border = BorderStroke(1.dp, Slate300),
+                                        modifier = Modifier.height(32.dp)
+                                    ) {
+                                        Icon(Icons.Filled.DeleteForever, contentDescription = "Delete", modifier = Modifier.size(14.dp))
+                                    }
                                 }
                             }
                         }

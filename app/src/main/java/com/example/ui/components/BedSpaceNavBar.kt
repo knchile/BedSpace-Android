@@ -275,7 +275,7 @@ fun BedSpaceTopBar(
                 }
             }
 
-            // Quick Portal Tab Bar for fast one-tap navigation
+            // Quick Portal Tab Bar for fast role-isolated navigation
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -283,66 +283,136 @@ fun BedSpaceTopBar(
                     .padding(horizontal = 4.dp, vertical = 3.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                PortalTab(
-                    title = "Find Rooms",
-                    icon = Icons.Filled.Language,
-                    isSelected = currentDestination == AppDestination.LANDING,
-                    onClick = { onNavigate(AppDestination.LANDING) },
-                    modifier = Modifier.weight(1f)
-                )
-                PortalTab(
-                    title = "Student",
-                    icon = Icons.Filled.School,
-                    isSelected = currentDestination == AppDestination.STUDENT,
-                    onClick = {
-                        if (currentUser == null) {
-                            onOpenAuth()
-                        } else {
-                            onNavigate(AppDestination.STUDENT)
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-                PortalTab(
-                    title = "Landlord",
-                    icon = Icons.Filled.Apartment,
-                    isSelected = currentDestination == AppDestination.LANDLORD,
-                    onClick = {
-                        if (currentUser == null) {
-                            onOpenAuth()
-                        } else {
-                            onNavigate(AppDestination.LANDLORD)
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-                PortalTab(
-                    title = "Admin",
-                    icon = Icons.Filled.AdminPanelSettings,
-                    isSelected = currentDestination == AppDestination.ADMIN,
-                    onClick = {
-                        if (currentUser == null || currentUser?.role != UserRole.ADMIN) {
-                            onOpenAuth()
-                        } else {
-                            onNavigate(AppDestination.ADMIN)
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-                PortalTab(
-                    title = "FAQs",
-                    icon = Icons.Filled.HelpOutline,
-                    isSelected = currentDestination == AppDestination.FAQS,
-                    onClick = { onNavigate(AppDestination.FAQS) },
-                    modifier = Modifier.weight(0.9f)
-                )
-                PortalTab(
-                    title = "Privacy",
-                    icon = Icons.Filled.Policy,
-                    isSelected = currentDestination == AppDestination.PRIVACY_POLICY,
-                    onClick = { onNavigate(AppDestination.PRIVACY_POLICY) },
-                    modifier = Modifier.weight(0.9f)
-                )
+                when (currentUser?.role) {
+                    UserRole.STUDENT -> {
+                        PortalTab(
+                            title = "Find Rooms",
+                            icon = Icons.Filled.Language,
+                            isSelected = currentDestination == AppDestination.LANDING,
+                            onClick = { onNavigate(AppDestination.LANDING) },
+                            modifier = Modifier.weight(1.1f)
+                        )
+                        PortalTab(
+                            title = "My Dashboard",
+                            icon = Icons.Filled.School,
+                            isSelected = currentDestination == AppDestination.STUDENT,
+                            onClick = { onNavigate(AppDestination.STUDENT) },
+                            modifier = Modifier.weight(1.1f)
+                        )
+                        PortalTab(
+                            title = "Help & FAQs",
+                            icon = Icons.Filled.HelpOutline,
+                            isSelected = currentDestination == AppDestination.FAQS,
+                            onClick = { onNavigate(AppDestination.FAQS) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        PortalTab(
+                            title = "Privacy",
+                            icon = Icons.Filled.Policy,
+                            isSelected = currentDestination == AppDestination.PRIVACY_POLICY,
+                            onClick = { onNavigate(AppDestination.PRIVACY_POLICY) },
+                            modifier = Modifier.weight(0.9f)
+                        )
+                    }
+                    UserRole.LANDLORD -> {
+                        PortalTab(
+                            title = "My Dashboard",
+                            icon = Icons.Filled.Apartment,
+                            isSelected = currentDestination == AppDestination.LANDLORD,
+                            onClick = { onNavigate(AppDestination.LANDLORD) },
+                            modifier = Modifier.weight(1.2f)
+                        )
+                        PortalTab(
+                            title = "Browse Market",
+                            icon = Icons.Filled.Language,
+                            isSelected = currentDestination == AppDestination.LANDING,
+                            onClick = { onNavigate(AppDestination.LANDING) },
+                            modifier = Modifier.weight(1.1f)
+                        )
+                        PortalTab(
+                            title = "Landlord FAQs",
+                            icon = Icons.Filled.HelpOutline,
+                            isSelected = currentDestination == AppDestination.FAQS,
+                            onClick = { onNavigate(AppDestination.FAQS) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        PortalTab(
+                            title = "Privacy",
+                            icon = Icons.Filled.Policy,
+                            isSelected = currentDestination == AppDestination.PRIVACY_POLICY,
+                            onClick = { onNavigate(AppDestination.PRIVACY_POLICY) },
+                            modifier = Modifier.weight(0.9f)
+                        )
+                    }
+                    UserRole.ADMIN -> {
+                        PortalTab(
+                            title = "Admin Console",
+                            icon = Icons.Filled.AdminPanelSettings,
+                            isSelected = currentDestination == AppDestination.ADMIN,
+                            onClick = { onNavigate(AppDestination.ADMIN) },
+                            modifier = Modifier.weight(1.2f)
+                        )
+                        PortalTab(
+                            title = "Market",
+                            icon = Icons.Filled.Language,
+                            isSelected = currentDestination == AppDestination.LANDING,
+                            onClick = { onNavigate(AppDestination.LANDING) },
+                            modifier = Modifier.weight(0.9f)
+                        )
+                        PortalTab(
+                            title = "Student",
+                            icon = Icons.Filled.School,
+                            isSelected = currentDestination == AppDestination.STUDENT,
+                            onClick = { onNavigate(AppDestination.STUDENT) },
+                            modifier = Modifier.weight(0.9f)
+                        )
+                        PortalTab(
+                            title = "Landlord",
+                            icon = Icons.Filled.Apartment,
+                            isSelected = currentDestination == AppDestination.LANDLORD,
+                            onClick = { onNavigate(AppDestination.LANDLORD) },
+                            modifier = Modifier.weight(0.9f)
+                        )
+                        PortalTab(
+                            title = "FAQs",
+                            icon = Icons.Filled.HelpOutline,
+                            isSelected = currentDestination == AppDestination.FAQS,
+                            onClick = { onNavigate(AppDestination.FAQS) },
+                            modifier = Modifier.weight(0.8f)
+                        )
+                    }
+                    null -> {
+                        // GUEST (Not Logged In)
+                        PortalTab(
+                            title = "Find Rooms",
+                            icon = Icons.Filled.Language,
+                            isSelected = currentDestination == AppDestination.LANDING,
+                            onClick = { onNavigate(AppDestination.LANDING) },
+                            modifier = Modifier.weight(1.2f)
+                        )
+                        PortalTab(
+                            title = "List Property",
+                            icon = Icons.Filled.Apartment,
+                            isSelected = false,
+                            onClick = { onOpenAuth() },
+                            modifier = Modifier.weight(1.1f)
+                        )
+                        PortalTab(
+                            title = "Help & FAQs",
+                            icon = Icons.Filled.HelpOutline,
+                            isSelected = currentDestination == AppDestination.FAQS,
+                            onClick = { onNavigate(AppDestination.FAQS) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        PortalTab(
+                            title = "Privacy",
+                            icon = Icons.Filled.Policy,
+                            isSelected = currentDestination == AppDestination.PRIVACY_POLICY,
+                            onClick = { onNavigate(AppDestination.PRIVACY_POLICY) },
+                            modifier = Modifier.weight(0.9f)
+                        )
+                    }
+                }
             }
         }
     }
