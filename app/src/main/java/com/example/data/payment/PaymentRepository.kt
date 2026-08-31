@@ -67,7 +67,7 @@ object PaymentRepository {
             PaymentProvider.ZAMTEL_KWACHA -> "ZAM"
             PaymentProvider.VISA_MASTERCARD -> "CRD"
         }
-        val refCode = "BSZM-$prefix-${(100000..999999).random()}"
+        val refCode = "BSZM-LIP-${(100000..999999).random()}"
 
         val tx = PaymentTransaction(
             id = "tx_${UUID.randomUUID().toString().take(8)}",
@@ -103,8 +103,8 @@ object PaymentRepository {
         NeonRepository.addNotification(
             PushNotificationRecord(
                 recipientRole = "LANDLORD",
-                title = "💰 Payment Received: K$amountKwacha",
-                body = "${student.name} completed ${paymentType.label} via ${provider.label} (Ref: $refCode). Room reserved.",
+                title = "💰 Lipila Payment Received: K$amountKwacha",
+                body = "${student.name} paid K$amountKwacha via Lipila (${provider.label}, Ref: $refCode). Room reserved.",
                 channel = "PAYMENT"
             )
         )
@@ -112,8 +112,8 @@ object PaymentRepository {
         NeonRepository.addNotification(
             PushNotificationRecord(
                 recipientRole = "STUDENT",
-                title = "🧾 Payment Confirmed (Ref: $refCode)",
-                body = "Your payment of K$amountKwacha to ${property.landlordName} was successful. Landlord contacts are unlocked!",
+                title = "🧾 Lipila Payment Confirmed (Ref: $refCode)",
+                body = "Your payment of K$amountKwacha to ${property.landlordName} was processed via Lipila Gateway. Landlord contacts unlocked!",
                 channel = "PAYMENT"
             )
         )

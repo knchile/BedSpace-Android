@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.data.auth.AuthRepository
+import com.example.data.payment.LipilaPaymentClient
 import com.example.data.payment.PaymentRepository
 import com.example.model.PaymentProvider
 import com.example.model.PaymentTransaction
@@ -150,14 +151,14 @@ fun PaymentDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Zambian Payment Gateway",
+                                text = "Lipila Payment Gateway",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Navy900
                                 )
                             )
                             Text(
-                                text = "Instant Mobile Money & Card Checkout",
+                                text = "Mobile Money (Airtel · MTN · Zamtel) & Card",
                                 style = MaterialTheme.typography.labelSmall.copy(color = Slate500)
                             )
                         }
@@ -527,14 +528,32 @@ fun PaymentDialog(
                             )
 
                             isProcessing = true
-                            processingStep = "Sending USSD push prompt to $phoneOrAccount..."
+                            processingStep = "Initiating Lipila API payment request..."
 
                             coroutineScope.launch {
-                                delay(1500)
-                                processingStep = "Awaiting mobile PIN approval..."
-                                delay(1800)
-                                processingStep = "Verifying transaction with ${selectedProvider.label}..."
+                                val lipilaResult = if (selectedProvider == PaymentProvider.VISA_MASTERCARD) {
+                                    LipilaPaymentClient.collectCardPayment(
+                                        amountKwacha = amountToPay,
+                                        cardNumber = phoneOrAccount,
+                                        customerName = studentUser.name,
+                                        customerEmail = studentUser.email,
+                                        narration = "BedSpaceZM: ${property.title}"
+                                    )
+                                } else {
+                                    processingStep = "Pushing ${selectedProvider.label} USSD prompt to $phoneOrAccount..."
+                                    LipilaPaymentClient.collectMobileMoney(
+                                        amountKwacha = amountToPay,
+                                        accountNumber = phoneOrAccount,
+                                        provider = selectedProvider,
+                                        customerName = studentUser.name,
+                                        customerEmail = studentUser.email,
+                                        narration = "BedSpaceZM: ${property.title}"
+                                    )
+                                }
+
                                 delay(1200)
+                                processingStep = "Verifying Lipila settlement status (${lipilaResult.status})..."
+                                delay(800)
 
                                 val tx = PaymentRepository.processPayment(
                                     bookingId = bookingId,
